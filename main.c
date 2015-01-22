@@ -45,6 +45,10 @@ int main(int argc, char *argv[])
 	}
 	generateDungeon(map);
 	printMap();
+	for(x=0;x<160;x++)
+	{
+		free(map[x]);
+	}
 	free(map);
 	return 0;
 }
@@ -56,7 +60,29 @@ void printMap()
 	{
 		for(x=0;x<160;x++)
 		{
-			printf("%1d", map[x][y]);
+			char toPrint;
+			switch(map[x][y])
+			{
+				case 0: //Rock
+					toPrint = '#';
+					break;
+				case 1: //Immutable wall
+					toPrint = '|';
+					break;
+				case 2: //floor
+					toPrint = '.';
+					break;
+				case 3:
+					break;
+				case 4:
+					break;
+				case 5:
+					break;
+				default:
+					printf("\n\nInvalid dungeon tile ID: %d", map[x][y]);
+					return;
+			}
+			printf("%c", toPrint);
 		}
 		printf("\n");
 	}

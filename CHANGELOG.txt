@@ -2,5 +2,9 @@
 2015/1/21 21:49 - created Makefile, got both main.c to compile with generator.c AT THE SAME TIME. Nice!
 2015/1/21 22:09 - created a border around the edge of the map, immutable
 2015/1/21 23:09 - created a command-line switch [-s seed] for adding a seed value to the random level generator. Also, a [--help] switch is made available.
+2015/1/22 10:44 - added a function to generate a room. returns 0 on success, 1 on failure.
+
+
+
 
 

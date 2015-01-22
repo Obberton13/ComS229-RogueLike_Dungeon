@@ -1,7 +1,8 @@
 #include<stdlib.h>
+#include<stdio.h>//TODO TEMPORARY
 
-void generateRoom();
-
+int generateRoom(int **map);
+int saveRoom(int roomX, int roomY, int roomW, int roomH, int **map);
 void generateDungeon(int **map)
 {
 	int x, y;
@@ -22,10 +23,34 @@ void generateDungeon(int **map)
 		map[0][y] = 1;
 		map[159][y] = 1;
 	}
+	generateRoom(map);
 	return;
 }
 
-void generateRoom()
+int generateRoom(int **map)
 {
-	
+	//TODO I should not have printf's here
+	int roomX = random()%150+1;
+	int roomY = random()%85+1;
+	int roomW = random()%15 + 8;//8-22
+	int roomH = random()%12 + 5;//5-16
+	printf("Generating room at %d, %d with size %d, %d\n", roomX, roomY, roomW, roomH);
+	return saveRoom(roomX, roomY, roomW, roomH, map);
+}
+
+int saveRoom(int roomX, int roomY, int roomW, int roomH, int **map)
+{
+	if(((roomX+roomW)>159)||((roomY+roomH)>95))
+	{
+		return 1;
+	}
+	int x, y;
+	for(x=roomX;x<roomX+roomW;x++)
+	{
+		for(y=roomY;y<roomY+roomH;y++)
+		{
+			map[x][y] = 2;
+		}
+	}
+	return 0;
 }
