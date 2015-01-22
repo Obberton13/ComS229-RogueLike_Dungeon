@@ -1,4 +1,6 @@
-#include<stdio.h>
+#include<stdlib.h>
+
+void generateRoom();
 
 void generateDungeon(int **map)
 {
@@ -21,4 +23,9 @@ void generateDungeon(int **map)
 		map[159][y] = 1;
 	}
 	return;
+}
+
+void generateRoom()
+{
+	
 }
