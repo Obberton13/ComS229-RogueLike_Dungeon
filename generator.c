@@ -23,7 +23,14 @@ void generateDungeon(int **map)
 		map[0][y] = 1;
 		map[159][y] = 1;
 	}
-	generateRoom(map);
+	int roomsGenerated = 0;
+	while(roomsGenerated <12)
+	{
+		if(generateRoom(map)==0)
+		{
+			roomsGenerated++;
+		}
+	}
 	return;
 }
 
@@ -45,6 +52,13 @@ int saveRoom(int roomX, int roomY, int roomW, int roomH, int **map)
 		return 1;
 	}
 	int x, y;
+	for(x=roomX;x<roomX+roomW;x++)
+	{
+		for(y=roomY;y<roomY+roomH;y++)
+		{
+			if(map[x][y]==2) return 1;
+		}
+	}
 	for(x=roomX;x<roomX+roomW;x++)
 	{
 		for(y=roomY;y<roomY+roomH;y++)
