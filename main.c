@@ -6,9 +6,7 @@
 
 #include "generator.h"
 
-int **map;
-
-void printMap(void);
+void printMap(DungeonTile **map);
 
 int main(int argc, char *argv[])
 {
@@ -37,14 +35,14 @@ int main(int argc, char *argv[])
 		}
 	}
 	srand(seed);
-	map = (int**) malloc(sizeof(int*)*160);
+	DungeonTile** map = (DungeonTile**) malloc(sizeof(DungeonTile*)*160);
 	int x;
 	for(x=0;x<160;x++)
 	{
-		map[x] = (int*) malloc(sizeof(int)*96);
+		map[x] = (DungeonTile*) malloc(sizeof(DungeonTile)*96);
 	}
 	generateDungeon(map);
-	printMap();
+	printMap(map);
 	for(x=0;x<160;x++)
 	{
 		free(map[x]);
@@ -53,7 +51,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void printMap()
+void printMap(DungeonTile **map)
 {
 	int x, y;
 	for(y=0;y<96;y++)
@@ -63,20 +61,14 @@ void printMap()
 			char toPrint;
 			switch(map[x][y])
 			{
-				case 0: //Rock
+				case ROCK: //Rock
 					toPrint = '#';
 					break;
-				case 1: //Immutable wall
+				case EDGE: //Immutable wall
 					toPrint = '|';
 					break;
-				case 2: //floor
+				case FLOOR: //floor
 					toPrint = '.';
-					break;
-				case 3:
-					break;
-				case 4:
-					break;
-				case 5:
 					break;
 				default:
 					printf("\n\nInvalid dungeon tile ID: %d", map[x][y]);

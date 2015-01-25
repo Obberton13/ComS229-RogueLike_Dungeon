@@ -4,6 +4,7 @@
 2015/1/21 23:09 - created a command-line switch [-s seed] for adding a seed value to the random level generator. Also, a [--help] switch is made available.
 2015/1/22 10:44 - added a function to generate a room. returns 0 on success, 1 on failure.
 2015/1/22 22:15 - Now generates 12 non-overlapping rooms.
+2015/1/25 16:28 - Made the map an enumerator, no longer a int value. Easier to deal with later.
 
 
 
