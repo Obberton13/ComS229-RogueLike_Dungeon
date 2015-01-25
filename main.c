@@ -6,7 +6,7 @@
 
 #include "generator.h"
 
-void printMap(DungeonTile **map);
+void printMap(int **map);
 
 int main(int argc, char *argv[])
 {
@@ -35,11 +35,11 @@ int main(int argc, char *argv[])
 		}
 	}
 	srand(seed);
-	DungeonTile** map = (DungeonTile**) malloc(sizeof(DungeonTile*)*160);
+	int** map = (int**) malloc(sizeof(int*)*160);
 	int x;
 	for(x=0;x<160;x++)
 	{
-		map[x] = (DungeonTile*) malloc(sizeof(DungeonTile)*96);
+		map[x] = (int*) malloc(sizeof(int)*96);
 	}
 	generateDungeon(map);
 	printMap(map);
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void printMap(DungeonTile **map)
+void printMap(int **map)
 {
 	int x, y;
 	for(y=0;y<96;y++)
@@ -61,13 +61,13 @@ void printMap(DungeonTile **map)
 			char toPrint;
 			switch(map[x][y])
 			{
-				case ROCK: //Rock
+				case 0: //Rock
 					toPrint = '#';
 					break;
-				case EDGE: //Immutable wall
+				case 1: //Immutable wall
 					toPrint = '|';
 					break;
-				case FLOOR: //floor
+				case 2: //floor
 					toPrint = '.';
 					break;
 				default:
