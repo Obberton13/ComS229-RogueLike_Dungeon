@@ -5,6 +5,8 @@
 2015/1/22 10:44 - added a function to generate a room. returns 0 on success, 1 on failure.
 2015/1/22 22:15 - Now generates 12 non-overlapping rooms.
 2015/1/25 16:28 - Made the map an enumerator, no longer a int value. Easier to deal with later.
+2015/1/25 17:06 - Made the map an int again, because rock hardness.
+2015/1/25 22:44 - Can now find the closest room from a certain room.
 
 
 
