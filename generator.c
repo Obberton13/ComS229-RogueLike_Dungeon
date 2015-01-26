@@ -84,7 +84,8 @@ int generateRoom(int **map, RoomsList *list)
 	Room room; 
 	room.x = random()%160;
 	room.y = random()%96;
-	int roomSize = random()%40;
+	int roomSize = random()%40;//TODO I could maybe adjust the base size to be a bit smaller.
+	//A 40x40 room is pretty big IMO.
 	room.w = roomSize + random()%10 + 8;
 	room.h = roomSize + random()%8 + 5;
 	if(!canPlaceRoom(room, map))
@@ -141,7 +142,6 @@ void connectAllRooms(int **map, RoomsList *list)
 	connected[0] = 1;
 	for(i=0;i<list->count-1;i++)
 	{
-		
 		//find the closest connected room to the closest unconnected room to room 0
 		//closest unconnected room to room 0:
 		int closest = findClosestRoom(i, list, connected, 1);//keep in mind 0 is connected
