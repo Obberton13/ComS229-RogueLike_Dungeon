@@ -18,12 +18,13 @@ typedef struct RoomsList {
 
 void initializeDungeon(int **map);
 void saveRoom(Room room, int **map, RoomsList *list);
-void generateAllRooms(int **map, RoomsList list);
+void generateAllRooms(int **map, RoomsList *list);
 int generateRoom(int **map, RoomsList *list);
 int canPlaceRoom(Room room, int **map);
 void connectAllRooms(int **map, RoomsList *list);
-Room findClosestConnectedRoom(int i, RoomsList *list);
-void connectRooms(Room room1, Room room2);
+Room findClosestUnconnectedRoom(int i, RoomsList *list);
+void connectRooms(Room room1, Room room2, int **map);
+int inRoom(int x, int y, Room room);
 
 //TODO temporary functions
 void printRooms(RoomsList list);
@@ -34,7 +35,7 @@ void generateDungeon(int **map)
 	initializeDungeon(map);
 	RoomsList list;
 	list.count = 0;
-	generateAllRooms(map, list);
+	generateAllRooms(map, &list);
 	connectAllRooms(map, &list);
 	return;
 }
@@ -61,12 +62,12 @@ void initializeDungeon(int **map)
 	}
 }
 
-void generateAllRooms(int **map, RoomsList list)
+void generateAllRooms(int **map, RoomsList *list)
 {
 	int failures = 0;
-	while((list.count<12||failures<2000)&&list.count<30)
+	while((list->count<12||failures<2000)&&list->count<30)
 	{
-		if(!generateRoom(map, &list))
+		if(!generateRoom(map, list))
 		{
 			failures = 0;
 		}
@@ -87,9 +88,6 @@ int generateRoom(int **map, RoomsList *list)
 	room.h = roomSize + random()%8 + 5;//5-41
 	if(!canPlaceRoom(room, map))
 	{
-		printf("Generated room at (%d, %d) with size (%d, %d)\n",
-			room.x, room.y, room.w, room.h);
-		printf("Room number %d\n", list->count);
 		saveRoom(room, map, list);
 		return 0;
 	}
@@ -108,7 +106,6 @@ void saveRoom(Room room, int **map, RoomsList *list) //1 on fail, 0 on success
 	}
 	list->list[list->count]=room;
 	list->count+=1;
-	printf("%d\n", list->count);
 	return;
 }
 
@@ -135,15 +132,18 @@ int canPlaceRoom(Room room, int **map) //0 on can't, 1 on can.
 void connectAllRooms(int **map, RoomsList *list)
 {
 	int i;
-	for(i=1;i<list->count;i++)
+	printf("Connecting all rooms. Rooms in list: %d\n", list->count);
+	for(i=list->count-1;i>1;i--)
 	{
-		Room closest = findClosestConnectedRoom(i, list);
-		connectRooms(closest, list->list[i]);
+		printf("starting with room at index %d", i);
+		Room closest = findClosestUnconnectedRoom(i, list);
+		connectRooms(closest, list->list[i], map);
 	}
 }
 
-Room findClosestConnectedRoom(int i, RoomsList *list)
+Room findClosestUnconnectedRoom(int i, RoomsList *list)
 {
+	printf("Finding closest room from room at (%d, %d)\n", list->list[i].x, list->list[i].y);
 	int x;
 	Room closest;
 	int minDistSqr = 999999;
@@ -163,4 +163,61 @@ Room findClosestConnectedRoom(int i, RoomsList *list)
 		}
 	}
 	return closest;
+}
+
+void connectRooms(Room room1, Room room2, int **map)
+{
+	//This method is the hard one.
+	printf("Connecting rooms at (%d, %d) and (%d, %d)\n", room1.x, room1.y, room2.x, room2.y);
+	int x = room1.x+(room1.w/2);
+	int y = room1.y+(room1.h/2);
+	while(!inRoom(x, y, room1))
+	{
+		if(x<room2.x+(room2.w/2))
+		{
+			x++;
+		}
+		else if(x>room2.x+(room2.w/2))
+		{
+			x--;
+		}
+		if(y<room2.y+(room2.h/2))
+		{
+			y++;
+		}
+		else if(y>room2.y+(room2.h/2))
+		{
+			y--;
+		}
+	}
+	while(inRoom(x,y, room2))
+	{
+		if(x<room2.x+(room2.w/2))
+		{
+			x++;
+		}
+		else if(x>room2.x+(room2.w/2))
+		{
+			x--;
+		}
+		map[x][y]=2;
+		if(y<room2.y+(room2.h/2))
+		{
+			y++;
+		}
+		else if(y>room2.y+(room2.h/2))
+		{
+			y--;
+		}
+		map[x][y]=2;
+	}
+}
+
+int inRoom(int x, int y, Room room)
+{
+	if(x<=room.x||x>=room.x+room.w-1||y<=room.y||y>=room.y+room.h-1)
+	{
+		return 1;
+	}
+	return 0;
 }
