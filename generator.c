@@ -22,9 +22,10 @@ void generateAllRooms(int **map, RoomsList *list);
 int generateRoom(int **map, RoomsList *list);
 int canPlaceRoom(Room room, int **map);
 void connectAllRooms(int **map, RoomsList *list);
-Room findClosestUnconnectedRoom(int i, RoomsList *list);
+int findClosestRoom(int i, RoomsList *list, int connected[30], int isConnected);
 void connectRooms(Room room1, Room room2, int **map);
 int inRoom(int x, int y, Room room);
+int isConnected(int i, int connected[30]);
 
 //TODO temporary functions
 void printRooms(RoomsList list);
@@ -84,8 +85,8 @@ int generateRoom(int **map, RoomsList *list)
 	room.x = random()%160;
 	room.y = random()%96;
 	int roomSize = random()%40;
-	room.w = roomSize + random()%10 + 8;//8-48
-	room.h = roomSize + random()%8 + 5;//5-41
+	room.w = roomSize + random()%10 + 8;
+	room.h = roomSize + random()%8 + 5;
 	if(!canPlaceRoom(room, map))
 	{
 		saveRoom(room, map, list);
@@ -94,7 +95,7 @@ int generateRoom(int **map, RoomsList *list)
 	return 1;
 }
 
-void saveRoom(Room room, int **map, RoomsList *list) //1 on fail, 0 on success
+void saveRoom(Room room, int **map, RoomsList *list) 
 {
 	int x, y;
 	for(x=room.x;x<room.x+room.w;x++)
@@ -109,7 +110,7 @@ void saveRoom(Room room, int **map, RoomsList *list) //1 on fail, 0 on success
 	return;
 }
 
-int canPlaceRoom(Room room, int **map) //0 on can't, 1 on can.
+int canPlaceRoom(Room room, int **map) 
 {
 	if(room.x<3||room.y<3||room.x+room.w+3>=160||room.y+room.h+3>=96)
 	{
@@ -132,25 +133,52 @@ int canPlaceRoom(Room room, int **map) //0 on can't, 1 on can.
 void connectAllRooms(int **map, RoomsList *list)
 {
 	int i;
-	printf("Connecting all rooms. Rooms in list: %d\n", list->count);
-	for(i=list->count-1;i>1;i--)
+	int connected[30];
+	for(i=0;i<30;i++)
 	{
-		printf("starting with room at index %d", i);
-		Room closest = findClosestUnconnectedRoom(i, list);
-		connectRooms(closest, list->list[i], map);
+		connected[i]=0;
+	}
+	connected[0] = 1;
+	for(i=0;i<list->count-1;i++)
+	{
+		
+		//find the closest connected room to the closest unconnected room to room 0
+		//closest unconnected room to room 0:
+		int closest = findClosestRoom(i, list, connected, 1);//keep in mind 0 is connected
+		if(closest == -1)
+		{
+			continue;
+		}
+		printf("Found closest unconnected room %d\n", closest);
+		//closest connected room:
+		int closestConnected = findClosestRoom(closest, list, connected, 0);
+		if(closestConnected == -1)//findClosestRoom should always be able to find a connected room.
+		{
+			continue;
+		}
+		printf("Found closest connected room %d\n", closestConnected);
+		connectRooms(list->list[closest], list->list[closestConnected], map);
+		connected[closest]=1;
 	}
 }
 
-Room findClosestUnconnectedRoom(int i, RoomsList *list)
+//TODO this function has an error in it somewhere, but I don't know where.
+int findClosestRoom(int i, RoomsList *list, int connected[30], int isConnected)
 {
-	printf("Finding closest room from room at (%d, %d)\n", list->list[i].x, list->list[i].y);
 	int x;
-	Room closest;
+	int closest = -1;//If I don't initialize this I get a seg fault. 
+	//Default value is like 80 or something with seed 123456789
 	int minDistSqr = 999999;
 	int cX = list->list[i].x + (list->list[i].w/2);
 	int cY = list->list[i].y + (list->list[i].h/2);
-	for(x=0;x<i;x++)
+	for(x=list->count-1;x>=0;x--)
 	{
+		printf("Entered for loop\n");
+		if(connected[x]==isConnected)
+		{
+			continue;
+		}
+		printf("Didn't use a continue on %d\n", x);
 		int centerX = list->list[x].x+(list->list[x].w/2);
 		int centerY = list->list[x].y+(list->list[x].h/2);
 		int dx = centerX-cX;
@@ -158,7 +186,8 @@ Room findClosestUnconnectedRoom(int i, RoomsList *list)
 		int distSqr=((dx*dx)+(dy*dy));
 		if(distSqr<minDistSqr)
 		{
-			closest = list->list[x];
+			printf("New smallest: %d\n", x);
+			closest = x;
 			minDistSqr = distSqr;
 		}
 	}
@@ -167,8 +196,6 @@ Room findClosestUnconnectedRoom(int i, RoomsList *list)
 
 void connectRooms(Room room1, Room room2, int **map)
 {
-	//This method is the hard one.
-	printf("Connecting rooms at (%d, %d) and (%d, %d)\n", room1.x, room1.y, room2.x, room2.y);
 	int x = room1.x+(room1.w/2);
 	int y = room1.y+(room1.h/2);
 	while(!inRoom(x, y, room1))
