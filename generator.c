@@ -149,14 +149,12 @@ void connectAllRooms(int **map, RoomsList *list)
 		{
 			continue;
 		}
-		printf("Found closest unconnected room %d\n", closest);
 		//closest connected room:
 		int closestConnected = findClosestRoom(closest, list, connected, 0);
 		if(closestConnected == -1)//findClosestRoom should always be able to find a connected room.
 		{
 			continue;
 		}
-		printf("Found closest connected room %d\n", closestConnected);
 		connectRooms(list->list[closest], list->list[closestConnected], map);
 		connected[closest]=1;
 	}
@@ -173,12 +171,10 @@ int findClosestRoom(int i, RoomsList *list, int connected[30], int isConnected)
 	int cY = list->list[i].y + (list->list[i].h/2);
 	for(x=list->count-1;x>=0;x--)
 	{
-		printf("Entered for loop\n");
 		if(connected[x]==isConnected)
 		{
 			continue;
 		}
-		printf("Didn't use a continue on %d\n", x);
 		int centerX = list->list[x].x+(list->list[x].w/2);
 		int centerY = list->list[x].y+(list->list[x].h/2);
 		int dx = centerX-cX;
@@ -186,7 +182,6 @@ int findClosestRoom(int i, RoomsList *list, int connected[30], int isConnected)
 		int distSqr=((dx*dx)+(dy*dy));
 		if(distSqr<minDistSqr)
 		{
-			printf("New smallest: %d\n", x);
 			closest = x;
 			minDistSqr = distSqr;
 		}
