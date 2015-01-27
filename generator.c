@@ -219,24 +219,81 @@ void connectRooms(Room room1, Room room2, int **map)
 	}
 	while(inRoom(x,y, room2))
 	{
+		int i;
+		int d = random() % 4 + 2;
 		if(x<room2.x+(room2.w/2))
 		{
-			x++;
+			for(i=0;i<d;i++)
+			{
+				map[++x][y] = 2;
+			}
 		}
 		else if(x>room2.x+(room2.w/2))
 		{
-			x--;
+			for(i=0;i<d;i++)
+			{
+				map[--x][y] = 2;
+			}
 		}
-		map[x][y]=2;
+		else
+		{
+			int r = random() % 3;
+			d/=2;
+			switch(r)
+			{
+				case 1:
+					for(i=0;i<d;i++)
+					{
+						map[++x][y] = 2;
+					}
+					break;
+				case 2:
+					for(i=0;i<d;i++)
+					{
+						map[--x][y] = 2;
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		d = random() % 4 + 2;
 		if(y<room2.y+(room2.h/2))
 		{
-			y++;
+			for(i=0;i<d;i++)
+			{
+				map[x][++y] = 2;
+			}
 		}
 		else if(y>room2.y+(room2.h/2))
 		{
-			y--;
+			for(i=0; i<d;i++)
+			{
+				map[x][--y] = 2;
+			}
 		}
-		map[x][y]=2;
+		else
+		{
+			int r = random() % 3;
+			d /= 2;
+			switch(r)
+			{
+				case 1:
+					for(i=0;i<d;i++)
+					{
+						map[x][++y] = 2;
+					}
+					break;
+				case 2:
+					for(i=0;i<d;i++)
+					{
+						map[x][--y] = 2;
+					}
+					break;
+				default:
+					break;
+			}
+		}
 	}
 }
 
