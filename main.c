@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ncurses.h>
 #include <time.h>
 
 #include "generator.h"
 
-void printMap(int **map);
+dungeon_t dungeon;
+
+void printMap();
 
 int main(int argc, char *argv[])
 {
@@ -35,23 +36,23 @@ int main(int argc, char *argv[])
 		}
 	}
 	srand(seed);
-	int** map = (int**) malloc(sizeof(int*)*160);
+	dungeon.map = (char**) malloc(sizeof(char*)*160);
 	int x;
 	for(x=0;x<160;x++)
 	{
-		map[x] = (int*) malloc(sizeof(int)*96);
+		dungeon.map[x] = (char*) malloc(sizeof(char)*96);
 	}
-	generateDungeon(map);
-	printMap(map);
+	generateDungeon();
+	printMap();
 	for(x=0;x<160;x++)
 	{
-		free(map[x]);
+		free(dungeon.map[x]);
 	}
-	free(map);
+	free(dungeon.map);
 	return 0;
 }
 
-void printMap(int **map)
+void printMap()
 {
 	int x, y;
 	for(y=0;y<96;y++)
@@ -59,7 +60,7 @@ void printMap(int **map)
 		for(x=0;x<160;x++)
 		{
 			char toPrint;
-			switch(map[x][y])
+			switch(dungeon.map[x][y])
 			{
 				case 0: //Rock
 					toPrint = '#';
@@ -71,7 +72,7 @@ void printMap(int **map)
 					toPrint = '.';
 					break;
 				default:
-					printf("\n\nInvalid dungeon tile ID: %d", map[x][y]);
+					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y]);
 					return;
 			}
 			printf("%c", toPrint);

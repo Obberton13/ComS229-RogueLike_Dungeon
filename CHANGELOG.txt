@@ -1,17 +1,22 @@
-2015/1/20 22:54 - Started project, created git repo, connected to private GitHub repo, created some files, and pushed. Yay. Things done, progress got.
-2015/1/21 21:49 - created Makefile, got both main.c to compile with generator.c AT THE SAME TIME. Nice!
-2015/1/21 22:09 - created a border around the edge of the map, immutable
-2015/1/21 23:09 - created a command-line switch [-s seed] for adding a seed value to the random level generator. Also, a [--help] switch is made available.
-2015/1/22 10:44 - added a function to generate a room. returns 0 on success, 1 on failure.
-2015/1/22 22:15 - Now generates 12 non-overlapping rooms.
-2015/1/25 16:28 - Made the map an enumerator, no longer a int value. Easier to deal with later.
-2015/1/25 17:06 - Made the map an int again, because rock hardness.
-2015/1/25 22:44 - Can now find the closest room from a certain room.
-2015/1/25 23:23 - Connecting rooms works! Still errors with finding the closest unconnected.
-2015/1/26 01:25 - All rooms now connect! Passageways are very straight, but that is fine for now.
-2015/1/27 10:44 - Passageways became twisting and turning.
-2015/1/27 12:37 - Removed printf's from generator.c. They are not needed.
 
+-----Project 1.01-----
 
+2015/01/20 22:54 - Started project, created git repo, connected to private GitHub repo, created some files, and pushed. Yay. Things done, progress got.
+2015/01/21 21:49 - created Makefile, got both main.c to compile with generator.c AT THE SAME TIME. Nice!
+2015/01/21 22:09 - created a border around the edge of the map, immutable
+2015/01/21 23:09 - created a command-line switch [-s seed] for adding a seed value to the random level generator. Also, a [--help] switch is made available.
+2015/01/22 10:44 - added a function to generate a room. returns 0 on success, 1 on failure.
+2015/01/22 22:15 - Now generates 12 non-overlapping rooms.
+2015/01/25 16:28 - Made the map an enumerator, no longer a int value. Easier to deal with later.
+2015/01/25 17:06 - Made the map an int again, because rock hardness.
+2015/01/25 22:44 - Can now find the closest room from a certain room.
+2015/01/25 23:23 - Connecting rooms works! Still errors with finding the closest unconnected.
+2015/01/26 01:25 - All rooms now connect! Passageways are very straight, but that is fine for now.
+2015/01/27 10:44 - Passageways became twisting and turning.
+2015/01/27 12:37 - Removed printf's from generator.c. They are not needed.
+
+-----Project 1.02-----
+
+2015/02/01 13:51 - Changed the entire project to use dungeon.h more. Added struct for the entire dungeon, which includes the rooms, which will be needed for this project.
 
 
