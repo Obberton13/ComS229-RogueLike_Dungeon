@@ -1,3 +1,6 @@
+
+-----Project 1.01-----
+
 2015/1/20 22:54 - Started project, created git repo, connected to private GitHub repo, created some files, and pushed. Yay. Things done, progress got.
 2015/1/21 21:49 - created Makefile, got both main.c to compile with generator.c AT THE SAME TIME. Nice!
 2015/1/21 22:09 - created a border around the edge of the map, immutable
@@ -11,6 +14,9 @@
 2015/1/26 01:25 - All rooms now connect! Passageways are very straight, but that is fine for now.
 2015/1/27 10:44 - Passageways became twisting and turning.
 2015/1/27 12:37 - Removed printf's from generator.c. They are not needed.
+
+-----Project 1.02-----
+
 
 
 
