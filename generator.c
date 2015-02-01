@@ -4,71 +4,60 @@
 //used for the enum, which will be used globally
 #include "generator.h"
 
-typedef struct Room {
-	int x;
-	int y;
-	int w;
-	int h;
-} Room;
-
-typedef struct RoomsList {
-	int count;
-	Room list[30];
-} RoomsList;
-
-void initializeDungeon(int **map);
-void saveRoom(Room room, int **map, RoomsList *list);
-void generateAllRooms(int **map, RoomsList *list);
-int generateRoom(int **map, RoomsList *list);
-int canPlaceRoom(Room room, int **map);
-void connectAllRooms(int **map, RoomsList *list);
-int findClosestRoom(int i, RoomsList *list, int connected[30], int isConnected);
-void connectRooms(Room room1, Room room2, int **map);
-int inRoom(int x, int y, Room room);
+void initializeDungeon(void);
+void saveRoom(room_t room);
+void generateAllRooms(void);
+int generateRoom(void);
+int canPlaceRoom(room_t room);
+void connectAllRooms(void);
+int findClosestRoom(int i, int connected[30], int isConnected);
+void connectRooms(room_t room1, room_t room2);
+int inRoom(int x, int y, room_t room);
 int isConnected(int i, int connected[30]);
 
 //TODO temporary functions
-void printRooms(RoomsList list);
+void printRooms(room_list_t list);
 
 //this is the main function for this .c file.
-void generateDungeon(int **map)
+void generateDungeon()
 {
-	initializeDungeon(map);
-	RoomsList list;
-	list.count = 0;
-	generateAllRooms(map, &list);
-	connectAllRooms(map, &list);
+	initializeDungeon();
+	dungeon.list.count = 0;
+	generateAllRooms();
+	connectAllRooms();
 	return;
 }
 
-void initializeDungeon(int **map)
+void initializeDungeon()
 {
 	int x, y;
 	for(x=0;x<160;x++)
 	{
 		for(y=0;y<96;y++)
 		{
-			map[x][y] = 0;
+			dungeon.map[x][y] = 0;
 		}
 	}
 	for(x=0;x<160;x++)
 	{
-		map[x][0] = 1;
-		map[x][95] = 1;
+		dungeon.map[x][0] = 1;
+		dungeon.map[x][95] = 1;
 	}
 	for(y=1;y<95;y++)
 	{
-		map[0][y] = 1;
-		map[159][y] = 1;
+		dungeon.map[0][y] = 1;
+		dungeon.map[159][y] = 1;
 	}
 }
 
-void generateAllRooms(int **map, RoomsList *list)
+void generateAllRooms()
 {
 	int failures = 0;
-	while((list->count<12||failures<2000)&&list->count<30)
+	while((dungeon.list.count<MIN_ROOMS
+		||failures<MAX_PLACEMENT_ATTEMPTS)
+		&&dungeon.list.count<MAX_ROOMS)
 	{
-		if(!generateRoom(map, list))
+		if(!generateRoom())
 		{
 			failures = 0;
 		}
@@ -79,50 +68,53 @@ void generateAllRooms(int **map, RoomsList *list)
 	}
 }
 
-int generateRoom(int **map, RoomsList *list)
+int generateRoom()
 {
-	Room room; 
-	room.x = random()%160;
-	room.y = random()%96;
+	room_t room; 
+	room.x = random()%DUNGEON_X;
+	room.y = random()%DUNGEON_Y;
 	int roomSize = random()%40;//TODO I could maybe adjust the base size to be a bit smaller.
 	//A 40x40 room is pretty big IMO.
 	room.w = roomSize + random()%10 + 8;
 	room.h = roomSize + random()%8 + 5;
-	if(!canPlaceRoom(room, map))
+	if(!canPlaceRoom(room))
 	{
-		saveRoom(room, map, list);
+		saveRoom(room);
 		return 0;
 	}
 	return 1;
 }
 
-void saveRoom(Room room, int **map, RoomsList *list) 
+void saveRoom(room_t room) 
 {
 	int x, y;
 	for(x=room.x;x<room.x+room.w;x++)
 	{
 		for(y=room.y;y<room.y+room.h;y++)
 		{
-			map[x][y] = 2;
+			dungeon.map[x][y] = 2;
 		}
 	}
-	list->list[list->count]=room;
-	list->count+=1;
+	dungeon.list.list[dungeon.list.count]=room;
+	dungeon.list.count+=1;
 	return;
 }
 
-int canPlaceRoom(Room room, int **map) 
+int canPlaceRoom(room_t room) 
 {
-	if(room.x<3||room.y<3||room.x+room.w+3>=160||room.y+room.h+3>=96)
+	if(room.x<ROOM_SEPARATION
+		||room.y<ROOM_SEPARATION
+		||room.x+room.w+ROOM_SEPARATION>=DUNGEON_X
+		||room.y+room.h+ROOM_SEPARATION>=DUNGEON_Y)
 	{
 		return 1;
 	}
 	int x,y;
-	for(x=room.x-3;x<room.x+room.w+3;x++)
+	for(x=room.x-ROOM_SEPARATION;x<room.x+room.w+ROOM_SEPARATION;x++)
 	{
-		for(y=room.y-3;y<room.y+room.h+3;y++)
+		for(y=room.y-ROOM_SEPARATION;y<room.y+room.h+ROOM_SEPARATION;y++)
 		{
-			if(map[x][y]!=0)
+			if(dungeon.map[x][y]!=0)
 			{
 				return 1;
 			}
@@ -131,7 +123,7 @@ int canPlaceRoom(Room room, int **map)
 	return 0;
 }
 
-void connectAllRooms(int **map, RoomsList *list)
+void connectAllRooms()
 {
 	int i;
 	int connected[30];
@@ -140,43 +132,40 @@ void connectAllRooms(int **map, RoomsList *list)
 		connected[i]=0;
 	}
 	connected[0] = 1;
-	for(i=0;i<list->count-1;i++)
+	for(i=0;i<dungeon.list.count;i++)
 	{
-		//find the closest connected room to the closest unconnected room to room 0
-		//closest unconnected room to room 0:
-		int closest = findClosestRoom(i, list, connected, 1);//keep in mind 0 is connected
+		int closest = findClosestRoom(i, connected, 1);
 		if(closest == -1)
 		{
 			continue;
 		}
-		//closest connected room:
-		int closestConnected = findClosestRoom(closest, list, connected, 0);
-		if(closestConnected == -1)//findClosestRoom should always be able to find a connected room.
+		int closestConnected = findClosestRoom(closest, connected, 0);
+		if(closestConnected == -1)
 		{
 			continue;
 		}
-		connectRooms(list->list[closest], list->list[closestConnected], map);
+		connectRooms(dungeon.list.list[closest], dungeon.list.list[closestConnected]);
 		connected[closest]=1;
 	}
 }
 
 //TODO this function has an error in it somewhere, but I don't know where.
-int findClosestRoom(int i, RoomsList *list, int connected[30], int isConnected)
+int findClosestRoom(int i, int connected[30], int isConnected)
 {
 	int x;
 	int closest = -1;//If I don't initialize this I get a seg fault. 
 	//Default value is like 80 or something with seed 123456789
 	int minDistSqr = 999999;
-	int cX = list->list[i].x + (list->list[i].w/2);
-	int cY = list->list[i].y + (list->list[i].h/2);
-	for(x=list->count-1;x>=0;x--)
+	int cX = dungeon.list.list[i].x + (dungeon.list.list[i].w/2);
+	int cY = dungeon.list.list[i].y + (dungeon.list.list[i].h/2);
+	for(x=dungeon.list.count-1;x>=0;x--)
 	{
 		if(connected[x]==isConnected)
 		{
 			continue;
 		}
-		int centerX = list->list[x].x+(list->list[x].w/2);
-		int centerY = list->list[x].y+(list->list[x].h/2);
+		int centerX = dungeon.list.list[x].x+(dungeon.list.list[x].w/2);
+		int centerY = dungeon.list.list[x].y+(dungeon.list.list[x].h/2);
 		int dx = centerX-cX;
 		int dy = centerY-cY;
 		int distSqr=((dx*dx)+(dy*dy));
@@ -189,7 +178,7 @@ int findClosestRoom(int i, RoomsList *list, int connected[30], int isConnected)
 	return closest;
 }
 
-void connectRooms(Room room1, Room room2, int **map)
+void connectRooms(room_t room1, room_t room2)
 {
 	int x = room1.x+(room1.w/2);
 	int y = room1.y+(room1.h/2);
@@ -220,14 +209,14 @@ void connectRooms(Room room1, Room room2, int **map)
 		{
 			for(i=0;i<d;i++)
 			{
-				map[++x][y] = 2;
+				dungeon.map[++x][y] = 2;
 			}
 		}
 		else if(x>room2.x+(room2.w/2))
 		{
 			for(i=0;i<d;i++)
 			{
-				map[--x][y] = 2;
+				dungeon.map[--x][y] = 2;
 			}
 		}
 		else
@@ -239,13 +228,13 @@ void connectRooms(Room room1, Room room2, int **map)
 				case 1:
 					for(i=0;i<d;i++)
 					{
-						map[++x][y] = 2;
+						dungeon.map[++x][y] = 2;
 					}
 					break;
 				case 2:
 					for(i=0;i<d;i++)
 					{
-						map[--x][y] = 2;
+						dungeon.map[--x][y] = 2;
 					}
 					break;
 				default:
@@ -257,14 +246,14 @@ void connectRooms(Room room1, Room room2, int **map)
 		{
 			for(i=0;i<d;i++)
 			{
-				map[x][++y] = 2;
+				dungeon.map[x][++y] = 2;
 			}
 		}
 		else if(y>room2.y+(room2.h/2))
 		{
 			for(i=0; i<d;i++)
 			{
-				map[x][--y] = 2;
+				dungeon.map[x][--y] = 2;
 			}
 		}
 		else
@@ -276,13 +265,13 @@ void connectRooms(Room room1, Room room2, int **map)
 				case 1:
 					for(i=0;i<d;i++)
 					{
-						map[x][++y] = 2;
+						dungeon.map[x][++y] = 2;
 					}
 					break;
 				case 2:
 					for(i=0;i<d;i++)
 					{
-						map[x][--y] = 2;
+						dungeon.map[x][--y] = 2;
 					}
 					break;
 				default:
@@ -292,7 +281,7 @@ void connectRooms(Room room1, Room room2, int **map)
 	}
 }
 
-int inRoom(int x, int y, Room room)
+int inRoom(int x, int y, room_t room)
 {
 	if(x<=room.x||x>=room.x+room.w-1||y<=room.y||y>=room.y+room.h-1)
 	{
