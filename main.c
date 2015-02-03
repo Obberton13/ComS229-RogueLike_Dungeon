@@ -14,13 +14,16 @@ typedef enum dmode {
 
 dungeon_t dungeon;
 
-void printMap();
+int open_file(FILE *f, char *mode);
+void printMap(void);
+void save_dungeon(FILE *f);
+void load_dungeon(FILE *f);
 
 int main(int argc, char *argv[])
 {
 	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
-	//FILE *f;
+	FILE *f = NULL;
 	if(argc>1)
 	{
 		if(strcmp(argv[1], "--help")==0)
@@ -65,20 +68,45 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		//TODO load the dungeon from ~/.rlg229/dungeon
 		printf("Load Mode!\n");
+		if(!open_file(f, "r"))
+		{
+			//TODO read from the file.
+			printf("Opened file for reading! cool!\n");
+			load_dungeon(f);
+		}
+		else
+		{
+			fprintf(stderr, "Error loading the file\n");
+			return 1;
+		}
 	}
-	printMap();
+	printMap();	
 	if(m==mode_save)
 	{
 		//TODO Save the dungeon to ~/.rlg229/dungeon
 		printf("Save Mode!\n");
+		if(!open_file(f, "w"))
+		{
+			//TODO save the dungeon to this file
+			printf("Opened file for saving! Cool!\n");
+			save_dungeon(f);
+		}
+		else
+		{
+			fprintf(stderr, "Error loading the file\n");
+			return 1;
+		}
 	}
 	for(x=0;x<DUNGEON_X;x++)
 	{
 		free(dungeon.map[x]);
 	}
 	free(dungeon.map);
+	if(f)
+	{
+		fclose(f);
+	}
 	return 0;
 }
 
@@ -109,4 +137,41 @@ void printMap()
 		}
 		printf("\n");
 	}
+}
+
+int open_file(FILE *f, char *mode)
+{
+	char *path;
+	char *home;
+	char *file = ".rlg229/dungeon";
+	
+	home = getenv("HOME");
+	path = malloc(strlen(home) + strlen(file) + 2);
+	if(!path)
+	{
+		fprintf(stderr, "malloc failed!\n");
+		return 1;
+	}
+
+	sprintf(path, "%s/%s", home, file);
+	f = fopen(path, mode);
+	
+	if(!f)
+	{
+		perror(path);
+		free(path);
+		return 1;
+	}
+	free(path);
+	return 0;
+}
+
+void save_dungeon(FILE *f)
+{
+
+}
+
+void load_dungeon(FILE *f)
+{
+
 }
