@@ -16,19 +16,19 @@ typedef enum terrain_tile {
 
 typedef struct terrain_cell {
 	terrain_tile_t tile;
-	int hardness;
+	unsigned char hardness;
 } terrain_cell_t;
 
 typedef struct room {
-	int x;
-	int y;
-	int w;
-	int h;
-	int size;
+	unsigned char x;
+	unsigned char y;
+	unsigned char w;
+	unsigned char h;
+	unsigned char size;
 } room_t;
 
 typedef struct room_list {
-	short int count;
+	unsigned short int count;
 	room_t list[MAX_ROOMS];
 } room_list_t;
 

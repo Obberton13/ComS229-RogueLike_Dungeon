@@ -32,23 +32,27 @@ void generateDungeon()
 void initializeDungeon()
 {
 	int x, y;
-	for(x=0;x<160;x++)
+	for(x=0;x<DUNGEON_X;x++)
 	{
-		for(y=0;y<96;y++)
+		for(y=0;y<DUNGEON_Y;y++)
 		{
 			dungeon.map[x][y].tile = ter_rock;
-			dungeon.map[x][y].hardness = random() % 255;
+			dungeon.map[x][y].hardness = random() % 254+1;
 		}
 	}
-	for(x=0;x<160;x++)
+	for(x=0;x<DUNGEON_X;x++)
 	{
 		dungeon.map[x][0].tile = ter_immutable;
+		dungeon.map[x][0].hardness = 255;
 		dungeon.map[x][95].tile = ter_immutable;
+		dungeon.map[x][95].hardness = 255;
 	}
-	for(y=1;y<95;y++)
+	for(y=1;y<DUNGEON_Y;y++)
 	{
 		dungeon.map[0][y].tile = ter_immutable;
+		dungeon.map[0][y].hardness = 255;
 		dungeon.map[159][y].tile = ter_immutable;
+		dungeon.map[159][y].hardness = 255;
 	}
 }
 

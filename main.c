@@ -86,11 +86,9 @@ int main(int argc, char *argv[])
 	if(m==mode_save)
 	{
 		//TODO Save the dungeon to ~/.rlg229/dungeon
-		printf("Save Mode!\n");
 		if(!open_file(&f, "w"))
 		{
 			//TODO save the dungeon to this file
-			printf("Opened file for saving! Cool!\n");
 			save_dungeon(f);
 		}
 		else
@@ -187,6 +185,16 @@ void save_dungeon(FILE *f)
 			values[3] = dungeon.map[x][y].hardness;
 			fwrite(values, sizeof(unsigned char), 4, f);
 		}
+	}
+	fwrite(&dungeon.list.count, sizeof(dungeon.list.count), 1, f);
+	for(x=0;x<dungeon.list.count;x++)
+	{
+		unsigned char values[4];
+		values[0] = dungeon.list.list[x].x;
+		values[1] = dungeon.list.list[x].y;
+		values[2] = dungeon.list.list[x].w;
+		values[3] = dungeon.list.list[x].h;
+		fwrite(values, sizeof(unsigned char), 4, f);
 	}
 }
 
