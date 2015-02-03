@@ -36,18 +36,19 @@ void initializeDungeon()
 	{
 		for(y=0;y<96;y++)
 		{
-			dungeon.map[x][y] = ter_rock;
+			dungeon.map[x][y].tile = ter_rock;
+			dungeon.map[x][y].hardness = random() % 255;
 		}
 	}
 	for(x=0;x<160;x++)
 	{
-		dungeon.map[x][0] = ter_immutable;
-		dungeon.map[x][95] = ter_immutable;
+		dungeon.map[x][0].tile = ter_immutable;
+		dungeon.map[x][95].tile = ter_immutable;
 	}
 	for(y=1;y<95;y++)
 	{
-		dungeon.map[0][y] = ter_immutable;
-		dungeon.map[159][y] = ter_immutable;
+		dungeon.map[0][y].tile = ter_immutable;
+		dungeon.map[159][y].tile = ter_immutable;
 	}
 }
 
@@ -92,7 +93,7 @@ void saveRoom(room_t room)
 	{
 		for(y=room.y;y<room.y+room.h;y++)
 		{
-			dungeon.map[x][y] = ter_floor;
+			dungeon.map[x][y].tile = ter_room;
 		}
 	}
 	dungeon.list.list[dungeon.list.count]=room;
@@ -114,7 +115,7 @@ int canPlaceRoom(room_t room)
 	{
 		for(y=room.y-ROOM_SEPARATION;y<room.y+room.h+ROOM_SEPARATION;y++)
 		{
-			if(dungeon.map[x][y]!=ter_rock)
+			if(dungeon.map[x][y].tile!=ter_rock)
 			{
 				return 1;
 			}
@@ -207,14 +208,22 @@ void connectRooms(room_t room1, room_t room2)
 		{
 			for(i=0;i<d;i++)
 			{
-				dungeon.map[++x][y] = ter_floor;
+				x++;
+				if(dungeon.map[x][y].tile!=ter_room)
+				{
+					dungeon.map[x][y].tile = ter_corridor;
+				}
 			}
 		}
 		else if(x>room2.x+(room2.w/2))
 		{
 			for(i=0;i<d;i++)
 			{
-				dungeon.map[--x][y] = ter_floor;
+				--x;
+				if(dungeon.map[x][y].tile!=ter_room)
+				{
+					dungeon.map[x][y].tile = ter_corridor;
+				}
 			}
 		}
 		else
@@ -226,13 +235,21 @@ void connectRooms(room_t room1, room_t room2)
 				case 1:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[++x][y] = ter_floor;
+						++x;
+						if(dungeon.map[x][y].tile!=ter_room)
+						{
+							dungeon.map[x][y].tile = ter_corridor;
+						}
 					}
 					break;
 				case 2:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[--x][y] = ter_floor;
+						--x;
+						if(dungeon.map[x][y].tile!=ter_room)
+						{
+							dungeon.map[x][y].tile = ter_corridor;
+						}
 					}
 					break;
 				default:
@@ -244,14 +261,22 @@ void connectRooms(room_t room1, room_t room2)
 		{
 			for(i=0;i<d;i++)
 			{
-				dungeon.map[x][++y] = ter_floor;
+				++y;
+				if(dungeon.map[x][y].tile!=ter_room)
+				{
+					dungeon.map[x][y].tile = ter_corridor;
+				}
 			}
 		}
 		else if(y>room2.y+(room2.h/2))
 		{
 			for(i=0; i<d;i++)
 			{
-				dungeon.map[x][--y] = ter_floor;
+				--y;
+				if(dungeon.map[x][y].tile!=ter_room)
+				{
+					dungeon.map[x][y].tile = ter_corridor;
+				}
 			}
 		}
 		else
@@ -263,13 +288,21 @@ void connectRooms(room_t room1, room_t room2)
 				case 1:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[x][++y] = ter_floor;
+						++y;
+						if(dungeon.map[x][y].tile!=ter_room)
+						{
+							dungeon.map[x][y].tile = ter_corridor;
+						}
 					}
 					break;
 				case 2:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[x][--y] = ter_floor;
+						--y;
+						if(dungeon.map[x][y].tile!=ter_room)
+						{
+							dungeon.map[x][y].tile = ter_corridor;
+						}
 					}
 					break;
 				default:

@@ -10,7 +10,8 @@
 typedef enum terrain_tile {
 	ter_rock,
 	ter_immutable,
-	ter_floor
+	ter_room,
+	ter_corridor,
 } terrain_tile_t;
 
 typedef struct terrain_cell {
@@ -27,12 +28,12 @@ typedef struct room {
 } room_t;
 
 typedef struct room_list {
-	int count;
+	short int count;
 	room_t list[MAX_ROOMS];
 } room_list_t;
 
 typedef struct dungeon {
-	terrain_tile_t** map;
+	terrain_cell_t** map;
 	room_list_t list;
 } dungeon_t;
 

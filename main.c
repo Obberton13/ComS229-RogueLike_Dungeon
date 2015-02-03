@@ -14,7 +14,8 @@ typedef enum dmode {
 
 dungeon_t dungeon;
 
-int open_file(FILE *f, char *mode);
+int open_file(FILE **f, char *mode);
+int calculate_file_size(void);
 void printMap(void);
 void save_dungeon(FILE *f);
 void load_dungeon(FILE *f);
@@ -56,11 +57,11 @@ int main(int argc, char *argv[])
 		}
 	}
 	srand(seed);
-	dungeon.map = (terrain_tile_t**) malloc(sizeof(terrain_tile_t*)*DUNGEON_X);
+	dungeon.map = (terrain_cell_t**) malloc(sizeof(terrain_cell_t*)*DUNGEON_X);
 	int x;
 	for(x=0;x<DUNGEON_X;x++)
 	{
-		dungeon.map[x] = (terrain_tile_t*) malloc(sizeof(terrain_tile_t)*DUNGEON_Y);
+		dungeon.map[x] = (terrain_cell_t*) malloc(sizeof(terrain_cell_t)*DUNGEON_Y);
 	}
 	if(m!=mode_load)
 	{
@@ -69,7 +70,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		printf("Load Mode!\n");
-		if(!open_file(f, "r"))
+		if(!open_file(&f, "r"))
 		{
 			//TODO read from the file.
 			printf("Opened file for reading! cool!\n");
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
 	{
 		//TODO Save the dungeon to ~/.rlg229/dungeon
 		printf("Save Mode!\n");
-		if(!open_file(f, "w"))
+		if(!open_file(&f, "w"))
 		{
 			//TODO save the dungeon to this file
 			printf("Opened file for saving! Cool!\n");
@@ -118,7 +119,7 @@ void printMap()
 		for(x=0;x<DUNGEON_X;x++)
 		{
 			char toPrint;
-			switch(dungeon.map[x][y])
+			switch(dungeon.map[x][y].tile)
 			{
 				case ter_rock:
 					toPrint = '#';
@@ -126,11 +127,14 @@ void printMap()
 				case ter_immutable:
 					toPrint = '|';
 					break;
-				case ter_floor:
+				case ter_room:
 					toPrint = '.';
 					break;
+				case ter_corridor:
+					toPrint = ',';
+					break;
 				default:
-					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y]);
+					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y].tile);
 					return;
 			}
 			printf("%c", toPrint);
@@ -139,12 +143,11 @@ void printMap()
 	}
 }
 
-int open_file(FILE *f, char *mode)
+int open_file(FILE **f, char *mode)
 {
 	char *path;
 	char *home;
 	char *file = ".rlg229/dungeon";
-	
 	home = getenv("HOME");
 	path = malloc(strlen(home) + strlen(file) + 2);
 	if(!path)
@@ -152,11 +155,9 @@ int open_file(FILE *f, char *mode)
 		fprintf(stderr, "malloc failed!\n");
 		return 1;
 	}
-
 	sprintf(path, "%s/%s", home, file);
-	f = fopen(path, mode);
-	
-	if(!f)
+	*f = fopen(path, mode);
+	if(!*f)
 	{
 		perror(path);
 		free(path);
@@ -168,10 +169,36 @@ int open_file(FILE *f, char *mode)
 
 void save_dungeon(FILE *f)
 {
-
+	//fwrite(toPrint, size, number, file)
+	fwrite("RLG229", sizeof("RLG229"), 1, f);
+	int version = 0;
+	fwrite(&version, sizeof(version), 1, f);
+	version = calculate_file_size();
+	fwrite(&version, sizeof(version), 1, f);
+	int x, y;
+	for(y=0;y<DUNGEON_Y;y++)
+	{
+		for(x=0;x<DUNGEON_X;x++)
+		{
+			unsigned char values[4];
+			values[0] = (dungeon.map[x][y].tile==ter_room||dungeon.map[x][y].tile==ter_corridor);
+			values[1] = (dungeon.map[x][y].tile==ter_room);
+			values[2] = (dungeon.map[x][y].tile==ter_corridor);
+			values[3] = dungeon.map[x][y].hardness;
+			fwrite(values, sizeof(unsigned char), 4, f);
+		}
+	}
 }
 
 void load_dungeon(FILE *f)
 {
+	
+}
 
+int calculate_file_size()
+{
+	int size = 160*96*4;//all of the dungeon tiles
+	size += dungeon.list.count*4;//values for all of the rooms
+	size += 2;//short containing number of rooms
+	return size;
 }
