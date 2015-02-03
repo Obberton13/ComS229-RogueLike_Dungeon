@@ -1,4 +1,5 @@
 #include<stdlib.h>
+#include<limits.h>
 #include<stdio.h>//TODO TEMPORARY
 
 //used for the enum, which will be used globally
@@ -35,18 +36,18 @@ void initializeDungeon()
 	{
 		for(y=0;y<96;y++)
 		{
-			dungeon.map[x][y] = 0;
+			dungeon.map[x][y] = ter_rock;
 		}
 	}
 	for(x=0;x<160;x++)
 	{
-		dungeon.map[x][0] = 1;
-		dungeon.map[x][95] = 1;
+		dungeon.map[x][0] = ter_immutable;
+		dungeon.map[x][95] = ter_immutable;
 	}
 	for(y=1;y<95;y++)
 	{
-		dungeon.map[0][y] = 1;
-		dungeon.map[159][y] = 1;
+		dungeon.map[0][y] = ter_immutable;
+		dungeon.map[159][y] = ter_immutable;
 	}
 }
 
@@ -73,10 +74,9 @@ int generateRoom()
 	room_t room; 
 	room.x = random()%DUNGEON_X;
 	room.y = random()%DUNGEON_Y;
-	int roomSize = random()%40;//TODO I could maybe adjust the base size to be a bit smaller.
-	//A 40x40 room is pretty big IMO.
-	room.w = roomSize + random()%10 + 8;
-	room.h = roomSize + random()%8 + 5;
+	room.size = random()%25;
+	room.w = room.size + random()%10 + ROOM_MIN_W;
+	room.h = room.size + random()%8 + ROOM_MIN_H;
 	if(!canPlaceRoom(room))
 	{
 		saveRoom(room);
@@ -92,7 +92,7 @@ void saveRoom(room_t room)
 	{
 		for(y=room.y;y<room.y+room.h;y++)
 		{
-			dungeon.map[x][y] = 2;
+			dungeon.map[x][y] = ter_floor;
 		}
 	}
 	dungeon.list.list[dungeon.list.count]=room;
@@ -114,7 +114,7 @@ int canPlaceRoom(room_t room)
 	{
 		for(y=room.y-ROOM_SEPARATION;y<room.y+room.h+ROOM_SEPARATION;y++)
 		{
-			if(dungeon.map[x][y]!=0)
+			if(dungeon.map[x][y]!=ter_rock)
 			{
 				return 1;
 			}
@@ -126,8 +126,8 @@ int canPlaceRoom(room_t room)
 void connectAllRooms()
 {
 	int i;
-	int connected[30];
-	for(i=0;i<30;i++)
+	int connected[MAX_ROOMS];
+	for(i=0;i<MAX_ROOMS;i++)
 	{
 		connected[i]=0;
 	}
@@ -149,13 +149,11 @@ void connectAllRooms()
 	}
 }
 
-//TODO this function has an error in it somewhere, but I don't know where.
 int findClosestRoom(int i, int connected[30], int isConnected)
 {
 	int x;
-	int closest = -1;//If I don't initialize this I get a seg fault. 
-	//Default value is like 80 or something with seed 123456789
-	int minDistSqr = 999999;
+	int closest = -1;
+	int minDist = INT_MAX; //maximum value for uint. I should just include limits.h
 	int cX = dungeon.list.list[i].x + (dungeon.list.list[i].w/2);
 	int cY = dungeon.list.list[i].y + (dungeon.list.list[i].h/2);
 	for(x=dungeon.list.count-1;x>=0;x--)
@@ -168,11 +166,11 @@ int findClosestRoom(int i, int connected[30], int isConnected)
 		int centerY = dungeon.list.list[x].y+(dungeon.list.list[x].h/2);
 		int dx = centerX-cX;
 		int dy = centerY-cY;
-		int distSqr=((dx*dx)+(dy*dy));
-		if(distSqr<minDistSqr)
+		int dist = ((dx*dx)+(dy*dy)); //technically sqr root, but that doesn't really matter
+		if(dist<minDist)
 		{
 			closest = x;
-			minDistSqr = distSqr;
+			minDist = dist;
 		}
 	}
 	return closest;
@@ -209,14 +207,14 @@ void connectRooms(room_t room1, room_t room2)
 		{
 			for(i=0;i<d;i++)
 			{
-				dungeon.map[++x][y] = 2;
+				dungeon.map[++x][y] = ter_floor;
 			}
 		}
 		else if(x>room2.x+(room2.w/2))
 		{
 			for(i=0;i<d;i++)
 			{
-				dungeon.map[--x][y] = 2;
+				dungeon.map[--x][y] = ter_floor;
 			}
 		}
 		else
@@ -228,13 +226,13 @@ void connectRooms(room_t room1, room_t room2)
 				case 1:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[++x][y] = 2;
+						dungeon.map[++x][y] = ter_floor;
 					}
 					break;
 				case 2:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[--x][y] = 2;
+						dungeon.map[--x][y] = ter_floor;
 					}
 					break;
 				default:
@@ -246,14 +244,14 @@ void connectRooms(room_t room1, room_t room2)
 		{
 			for(i=0;i<d;i++)
 			{
-				dungeon.map[x][++y] = 2;
+				dungeon.map[x][++y] = ter_floor;
 			}
 		}
 		else if(y>room2.y+(room2.h/2))
 		{
 			for(i=0; i<d;i++)
 			{
-				dungeon.map[x][--y] = 2;
+				dungeon.map[x][--y] = ter_floor;
 			}
 		}
 		else
@@ -265,13 +263,13 @@ void connectRooms(room_t room1, room_t room2)
 				case 1:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[x][++y] = 2;
+						dungeon.map[x][++y] = ter_floor;
 					}
 					break;
 				case 2:
 					for(i=0;i<d;i++)
 					{
-						dungeon.map[x][--y] = 2;
+						dungeon.map[x][--y] = ter_floor;
 					}
 					break;
 				default:

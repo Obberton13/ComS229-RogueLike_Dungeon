@@ -8,17 +8,22 @@
 #define MAX_PLACEMENT_ATTEMPTS 2000
 
 typedef enum terrain_tile {
-	ter_rock_hard,
-	ter_rock_soft,
-	ter_rock_immutable,
-	ter_floor	
+	ter_rock,
+	ter_immutable,
+	ter_floor
 } terrain_tile_t;
+
+typedef struct terrain_cell {
+	terrain_tile_t tile;
+	int hardness;
+} terrain_cell_t;
 
 typedef struct room {
 	int x;
 	int y;
 	int w;
 	int h;
+	int size;
 } room_t;
 
 typedef struct room_list {
@@ -27,7 +32,7 @@ typedef struct room_list {
 } room_list_t;
 
 typedef struct dungeon {
-	char** map;
+	terrain_tile_t** map;
 	room_list_t list;
 } dungeon_t;
 

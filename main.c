@@ -5,23 +5,12 @@
 
 #include "generator.h"
 
-<<<<<<< HEAD
-#define DUNGEON_X = 160
-#define DUNGEON_Y = 96
-#define MIN_ROOMS = 12
-#define MAX_ROOMS = 30
-#define ROOM_MIN_W = 8
-#define ROOM_MIN_H = 5
-#define ROOM_SEPARATION = 3
-#define MAX_PLACEMENT_ATTEMPTS = 2000
 
-typedef enum mode {
-	MODE_SAVE,
-	MODE_LOAD,
-	MODE_NORMAL,
-} mode_t;
-
-
+typedef enum dmode {
+	mode_save,
+	mode_load,
+	mode_normal,
+} dmode_t;
 
 dungeon_t dungeon;
 
@@ -29,20 +18,21 @@ void printMap();
 
 int main(int argc, char *argv[])
 {
-	mode_t m = MODE_NORMAL;
+	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
+	//FILE *f;
 	if(argc>1)
 	{
 		if(strcmp(argv[1], "--help")==0)
 		{
-			printf("Usage: DungeonGame [-s seed]\n");
+			fprintf(stderr, "Usage: DungeonGame [-s seed]\n");
 			return 0;
 		}
 		if(strcmp(argv[1], "-s")==0)
 		{
 			if (argc!=3) 
 			{
-				printf("Usage: DungeonGame [-s seed]\n");
+				fprintf(stderr, "Usage: DungeonGame [-s seed]\n");
 				return 0;
 			}
 			int length = strlen(argv[2]), i;
@@ -55,21 +45,21 @@ int main(int argc, char *argv[])
 		}
 		if(strcmp(argv[1], "--save")==0)
 		{
-			m = SAVE;
+			m = mode_save;
 		}
 		if(strcmp(argv[1], "--load")==0)
 		{
-			m = LOAD;
+			m = mode_load;
 		}
 	}
 	srand(seed);
-	dungeon.map = (char**) malloc(sizeof(char*)*160);
+	dungeon.map = (terrain_tile_t**) malloc(sizeof(terrain_tile_t*)*DUNGEON_X);
 	int x;
-	for(x=0;x<160;x++)
+	for(x=0;x<DUNGEON_X;x++)
 	{
-		dungeon.map[x] = (char*) malloc(sizeof(char)*96);
+		dungeon.map[x] = (terrain_tile_t*) malloc(sizeof(terrain_tile_t)*DUNGEON_Y);
 	}
-	if(m!=LOAD)
+	if(m!=mode_load)
 	{
 		generateDungeon();
 	}
@@ -79,12 +69,12 @@ int main(int argc, char *argv[])
 		printf("Load Mode!\n");
 	}
 	printMap();
-	if(m==SAVE)
+	if(m==mode_save)
 	{
-		//TODO Save the dungeon
+		//TODO Save the dungeon to ~/.rlg229/dungeon
 		printf("Save Mode!\n");
 	}
-	for(x=0;x<160;x++)
+	for(x=0;x<DUNGEON_X;x++)
 	{
 		free(dungeon.map[x]);
 	}
@@ -95,20 +85,20 @@ int main(int argc, char *argv[])
 void printMap()
 {
 	int x, y;
-	for(y=0;y<96;y++)
+	for(y=0;y<DUNGEON_Y;y++)
 	{
-		for(x=0;x<160;x++)
+		for(x=0;x<DUNGEON_X;x++)
 		{
 			char toPrint;
 			switch(dungeon.map[x][y])
 			{
-				case 0: //Rock
+				case ter_rock:
 					toPrint = '#';
 					break;
-				case 1: //Immutable wall
+				case ter_immutable:
 					toPrint = '|';
 					break;
-				case 2: //floor
+				case ter_floor:
 					toPrint = '.';
 					break;
 				default:
