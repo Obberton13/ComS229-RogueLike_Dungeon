@@ -28,7 +28,7 @@ typedef struct room {
 } room_t;
 
 typedef struct room_list {
-	unsigned short int count;
+	unsigned short count;
 	room_t list[MAX_ROOMS];
 } room_list_t;
 
@@ -40,3 +40,4 @@ typedef struct dungeon {
 extern dungeon_t dungeon;
 
 void generateDungeon(void);
+void initializeDungeon();

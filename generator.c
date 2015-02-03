@@ -5,7 +5,6 @@
 //used for the enum, which will be used globally
 #include "generator.h"
 
-void initializeDungeon(void);
 void saveRoom(room_t room);
 void generateAllRooms(void);
 int generateRoom(void);
@@ -22,7 +21,6 @@ void printRooms(room_list_t list);
 //this is the main function for this .c file.
 void generateDungeon()
 {
-	initializeDungeon();
 	dungeon.list.count = 0;
 	generateAllRooms();
 	connectAllRooms();

@@ -15,7 +15,7 @@ typedef enum dmode {
 dungeon_t dungeon;
 
 int open_file(FILE **f, char *mode);
-int calculate_file_size(void);
+long int calculate_file_size(void);
 void printMap(void);
 void save_dungeon(FILE *f);
 int load_dungeon(FILE *f);
@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
 	{
 		dungeon.map[x] = (terrain_cell_t*) malloc(sizeof(terrain_cell_t)*DUNGEON_Y);
 	}
+	initializeDungeon();
 	if(m!=mode_load)
 	{
 		generateDungeon();
@@ -165,10 +166,10 @@ int open_file(FILE **f, char *mode)
 void save_dungeon(FILE *f)
 {
 	//fwrite(toPrint, size, number, file)
-	fwrite("RLG229", sizeof("RLG229"), 1, f);
-	int version = 0;
+	fwrite("RLG229", 1, 6, f);
+	long int version = 0;
 	fwrite(&version, sizeof(version), 1, f);
-	int filesize = calculate_file_size();
+	long int filesize = calculate_file_size();
 	fwrite(&filesize, sizeof(version), 1, f);
 	int x, y;
 	for(y=0;y<DUNGEON_Y;y++)
@@ -197,13 +198,12 @@ void save_dungeon(FILE *f)
 
 int load_dungeon(FILE *f)
 {
-	char *FileType = malloc(sizeof("RLG229"));
-	fread(FileType, sizeof("RLG229"), 1, f);
-	printf("%s\n" FileType);
+	char *FileType = malloc(7);
+	fread(FileType, 1, 6, f);
 	free(FileType);
-	int version;
+	long int version;
 	fread(&version, sizeof(version), 1, f);
-	int filesize;
+	long int filesize;
 	fread(&filesize, sizeof(filesize), 1, f);
 	int x, y;
 	for(y=0;y<DUNGEON_Y;y++)
@@ -212,33 +212,43 @@ int load_dungeon(FILE *f)
 		{
 			unsigned char values[4];
 			fread(values, sizeof(values), 1, f);
-			if(values[1])
+			if(dungeon.map[x][y].tile!=ter_immutable)
 			{
-				dungeon.map[x][y].tile = ter_room;
+				if(values[1])
+				{
+					dungeon.map[x][y].tile = ter_room;
+				}
+				else if(values[2])
+				{
+					dungeon.map[x][y].tile = ter_corridor;
+				}
+				dungeon.map[x][y].hardness = values[3];
 			}
-			if(values[2])
-			{
-				dungeon.map[x][y].tile = ter_corridor;
-			}
-			dungeon.map[x][y].hardness = values[3];
 		}
 	}
 	fread(&dungeon.list.count, sizeof(dungeon.list.count), 1, f);
+	filesize-=2;
 	for(x=0;x<dungeon.list.count;x++)
 	{
+		if(filesize<0)
+		{
+			fprintf(stderr, "ran out of filesize without running out of dungeons in the list\n");
+			return 1;
+		}
 		unsigned char values[4];
 		fread(values, sizeof(values), 1, f);
 		dungeon.list.list[x].x = values[0];
 		dungeon.list.list[x].y = values[1];
 		dungeon.list.list[x].w = values[2];
 		dungeon.list.list[x].h = values[3];
+		filesize-=4;
 	}
 	return 0;
 }
 
-int calculate_file_size()
+long int calculate_file_size()
 {
-	int size = 160*96*4;//all of the dungeon tiles
+	long int size = 160*96*4;//all of the dungeon tiles
 	size += dungeon.list.count*4;//values for all of the rooms
 	size += 2;//short containing number of rooms
 	return size;
