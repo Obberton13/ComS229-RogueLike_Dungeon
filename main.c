@@ -18,7 +18,7 @@ int open_file(FILE **f, char *mode);
 int calculate_file_size(void);
 void printMap(void);
 void save_dungeon(FILE *f);
-void load_dungeon(FILE *f);
+int load_dungeon(FILE *f);
 
 int main(int argc, char *argv[])
 {
@@ -69,11 +69,8 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		printf("Load Mode!\n");
 		if(!open_file(&f, "r"))
 		{
-			//TODO read from the file.
-			printf("Opened file for reading! cool!\n");
 			load_dungeon(f);
 		}
 		else
@@ -171,8 +168,8 @@ void save_dungeon(FILE *f)
 	fwrite("RLG229", sizeof("RLG229"), 1, f);
 	int version = 0;
 	fwrite(&version, sizeof(version), 1, f);
-	version = calculate_file_size();
-	fwrite(&version, sizeof(version), 1, f);
+	int filesize = calculate_file_size();
+	fwrite(&filesize, sizeof(version), 1, f);
 	int x, y;
 	for(y=0;y<DUNGEON_Y;y++)
 	{
@@ -183,7 +180,7 @@ void save_dungeon(FILE *f)
 			values[1] = (dungeon.map[x][y].tile==ter_room);
 			values[2] = (dungeon.map[x][y].tile==ter_corridor);
 			values[3] = dungeon.map[x][y].hardness;
-			fwrite(values, sizeof(unsigned char), 4, f);
+			fwrite(values, sizeof(values), 1, f);
 		}
 	}
 	fwrite(&dungeon.list.count, sizeof(dungeon.list.count), 1, f);
@@ -194,13 +191,49 @@ void save_dungeon(FILE *f)
 		values[1] = dungeon.list.list[x].y;
 		values[2] = dungeon.list.list[x].w;
 		values[3] = dungeon.list.list[x].h;
-		fwrite(values, sizeof(unsigned char), 4, f);
+		fwrite(values, sizeof(values), 1, f);
 	}
 }
 
-void load_dungeon(FILE *f)
+int load_dungeon(FILE *f)
 {
-	
+	char *FileType = malloc(sizeof("RLG229"));
+	fread(FileType, sizeof("RLG229"), 1, f);
+	printf("%s\n" FileType);
+	free(FileType);
+	int version;
+	fread(&version, sizeof(version), 1, f);
+	int filesize;
+	fread(&filesize, sizeof(filesize), 1, f);
+	int x, y;
+	for(y=0;y<DUNGEON_Y;y++)
+	{
+		for(x=0;x<DUNGEON_X;x++)
+		{
+			unsigned char values[4];
+			fread(values, sizeof(values), 1, f);
+			if(values[1])
+			{
+				dungeon.map[x][y].tile = ter_room;
+			}
+			if(values[2])
+			{
+				dungeon.map[x][y].tile = ter_corridor;
+			}
+			dungeon.map[x][y].hardness = values[3];
+		}
+	}
+	fread(&dungeon.list.count, sizeof(dungeon.list.count), 1, f);
+	for(x=0;x<dungeon.list.count;x++)
+	{
+		unsigned char values[4];
+		fread(values, sizeof(values), 1, f);
+		dungeon.list.list[x].x = values[0];
+		dungeon.list.list[x].y = values[1];
+		dungeon.list.list[x].w = values[2];
+		dungeon.list.list[x].h = values[3];
+	}
+	return 0;
 }
 
 int calculate_file_size()

@@ -18,6 +18,8 @@
 2015/02/01 14:36 - Added command line arugments for save and load. They don't do anything yet.
 2015/02/03 03:25 - Can open files for saving and loading. Finished converting everything to enums and structs.
 2015/02/03 05:20 - Can now successfully write to a file, hopefully. I shoulda done load first, so I could test.
+2015/02/03 06:15 - Can now successfully load from written save file, but only the ones that I write. I need to perfect the load function before I do anything else.
+
 
 
 
