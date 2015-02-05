@@ -1,4 +1,4 @@
-Usage: ./DungeonGame [-s <seed value>]
+Usage: ./DungeonGame [-s <seed value>][--save][--load]
 
 Saving and loading:
 all of the important methods are in main.c:
