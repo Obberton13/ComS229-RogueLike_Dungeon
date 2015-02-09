@@ -82,13 +82,13 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	printMap();	
+	//TODO this is where the game loop goes
+	printMap();
+
 	if(m==mode_save)
 	{
-		//TODO Save the dungeon to ~/.rlg229/dungeon
 		if(!open_file(&f, "w"))
 		{
-			//TODO save the dungeon to this file
 			save_dungeon(f);
 		}
 		else

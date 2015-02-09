@@ -327,27 +327,21 @@ int inRoom(int x, int y, room_t room)
 
 void spawnAllMonsters()
 {
-	int i = 0;
 	int fails = 0;
-	printf("Entering monster placement loop\n");
-	while (i<MAX_MONSTERS&&fails<MAX_MONSTER_PLACEMENT_ATTEMPTS)
+	while (monsters.count<MAX_MONSTERS&&fails<MAX_MONSTER_PLACEMENT_ATTEMPTS)
 	{
 		monster_t monster;
 		monster.type = 1;
 		monster.toDisplay = 'm';
-		//TODO make this semi-random
 		int x = rand()%DUNGEON_X;
 		int y = rand()%DUNGEON_Y;
 		if(!spawnMonster(x, y, &monster))
 		{
-			i++;
 			fails = 0;
-			printf("Successfully placed monster\n");
 		}
 		else
 		{
 			fails++;
-			printf("Didn't place a monster\n");
 		}
 	}
 }
@@ -361,6 +355,8 @@ int spawnMonster(int x, int y, monster_t *m)
 			return 1;
 		default:
 			dungeon.map[x][y].monsterIndex = monsters.count;
+			m->x = x;
+			m->y = y;
 			monsters.list[monsters.count] = *m;
 			monsters.count++;
 			return 0;
@@ -377,5 +373,5 @@ void spawnPlayer()
 	{
 		x = rand()%DUNGEON_X;
 		y = rand()%DUNGEON_Y;
-	}while (!spawnMonster(x, y, &player));
+	}while (spawnMonster(x, y, &player));
 }
