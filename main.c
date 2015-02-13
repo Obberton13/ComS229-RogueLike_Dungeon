@@ -5,7 +5,6 @@
 
 #include "generator.h"
 
-#define USAGE_STR "Usage: DungeonGame [-s <seed value>][--save][--load]\n"
 
 typedef enum dmode {
 	mode_save,
@@ -30,14 +29,14 @@ int main(int argc, char *argv[])
 	{
 		if(strcmp(argv[1], "--help")==0)
 		{
-			fprintf(stderr, USAGE_STR);
+			fprintf(stderr, "Usage: DungeonGame [-s seed]\n");
 			return 0;
 		}
 		if(strcmp(argv[1], "-s")==0)
 		{
 			if (argc!=3) 
 			{
-				fprintf(stderr, USAGE_STR);
+				fprintf(stderr, "Usage: DungeonGame [-s seed]\n");
 				return 0;
 			}
 			int length = strlen(argv[2]), i;

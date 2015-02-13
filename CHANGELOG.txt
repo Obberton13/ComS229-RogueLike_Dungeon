@@ -21,10 +21,6 @@
 2015/02/03 06:15 - Can now successfully load from written save file, but only the ones that I write. I need to perfect the load function before I do anything else.
 2015/02/03 07:32 - I fixed the saving and loading issues. The program now works exactly as it should.
 
------Project 1.03-----
-
-2015/02/05 09:39 - Changed the README.txt to accurately represent the usage. Forgot to change it before submission. Also set a #define for the usage/help string.
-
 
 
 
