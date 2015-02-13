@@ -1,21 +1,22 @@
 #include<stdlib.h>
 #include<limits.h>
-#include<stdio.h>
+#include<stdio.h>//TODO TEMPORARY
 
-#include "dungeon.h"
+//used for the enum, which will be used globally
+#include "generator.h"
 
-void generateAllRooms(void);
-void connectAllRooms(void);
-void spawnAllMonsters(void);
-void spawnPlayer(void);
 void saveRoom(room_t room);
+void generateAllRooms(void);
 int generateRoom(void);
 int canPlaceRoom(room_t room);
+void connectAllRooms(void);
 int findClosestRoom(int i, int connected[30], int isConnected);
 void connectRooms(room_t room1, room_t room2);
 int inRoom(int x, int y, room_t room);
 int isConnected(int i, int connected[30]);
-int spawnMonster(int x, int y, monster_t *m);
+
+//TODO temporary functions
+void printRooms(room_list_t list);
 
 //this is the main function for this .c file.
 void generateDungeon()
@@ -23,8 +24,6 @@ void generateDungeon()
 	dungeon.list.count = 0;
 	generateAllRooms();
 	connectAllRooms();
-	spawnPlayer();
-	spawnAllMonsters();
 	return;
 }
 
@@ -36,8 +35,7 @@ void initializeDungeon()
 		for(y=0;y<DUNGEON_Y;y++)
 		{
 			dungeon.map[x][y].tile = ter_rock;
-			dungeon.map[x][y].monsterIndex = MAX_MONSTERS;
-			dungeon.map[x][y].hardness = random() % (WALL_MAX_HARDNESS-1)+1;
+			dungeon.map[x][y].hardness = random() % 254+1;
 		}
 	}
 	for(x=0;x<DUNGEON_X;x++)
@@ -323,59 +321,4 @@ int inRoom(int x, int y, room_t room)
 		return 1;
 	}
 	return 0;
-}
-
-void spawnAllMonsters()
-{
-	int i = 0;
-	int fails = 0;
-	printf("Entering monster placement loop\n");
-	while (i<MAX_MONSTERS&&fails<MAX_MONSTER_PLACEMENT_ATTEMPTS)
-	{
-		monster_t monster;
-		monster.type = 1;
-		monster.toDisplay = 'm';
-		//TODO make this semi-random
-		int x = rand()%DUNGEON_X;
-		int y = rand()%DUNGEON_Y;
-		if(!spawnMonster(x, y, &monster))
-		{
-			i++;
-			fails = 0;
-			printf("Successfully placed monster\n");
-		}
-		else
-		{
-			fails++;
-			printf("Didn't place a monster\n");
-		}
-	}
-}
-
-int spawnMonster(int x, int y, monster_t *m)
-{
-	switch(dungeon.map[x][y].tile)
-	{
-		case ter_rock:
-		case ter_immutable:
-			return 1;
-		default:
-			dungeon.map[x][y].monsterIndex = monsters.count;
-			monsters.list[monsters.count] = *m;
-			monsters.count++;
-			return 0;
-	}
-}
-
-void spawnPlayer()
-{
-	monster_t player;
-	player.type = 0;
-	player.toDisplay = '@';
-	int x, y;
-	do
-	{
-		x = rand()%DUNGEON_X;
-		y = rand()%DUNGEON_Y;
-	}while (!spawnMonster(x, y, &player));
 }

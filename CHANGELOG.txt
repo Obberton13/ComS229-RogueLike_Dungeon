@@ -24,7 +24,6 @@
 -----Project 1.03-----
 
 2015/02/05 09:39 - Changed the README.txt to accurately represent the usage. Forgot to change it before submission. Also set a #define for the usage/help string.
-2015/02/08 18:51 - Can now spawn up to 30 monsters in the dungeon. Checks added to make sure they spawn inbounds. Player also spawns.
 
 
 

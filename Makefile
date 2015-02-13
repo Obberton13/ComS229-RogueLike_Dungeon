@@ -1,10 +1,10 @@
 DungeonGame: main.o generator.o
-	gcc -Wall -ggdb main.o generator.o -o DungeonGame
+	gcc -Wall main.o generator.o -o DungeonGame
 
-main.o: dungeon.h main.c
+main.o: generator.h main.c
 	gcc -Wall -Werror -ggdb main.c -c
 
-generator.o: dungeon.h generator.c
+generator.o: generator.h generator.c
 	gcc -Wall -Werror -ggdb generator.c -c
 
 clean:

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "dungeon.h"
+#include "generator.h"
 
 #define USAGE_STR "Usage: DungeonGame [-s <seed value>][--save][--load]\n"
 
@@ -14,7 +14,6 @@ typedef enum dmode {
 } dmode_t;
 
 dungeon_t dungeon;
-monster_list monsters;
 
 int open_file(FILE **f, char *mode);
 long int calculate_file_size(void);
@@ -134,10 +133,6 @@ void printMap()
 				default:
 					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y].tile);
 					return;
-			}
-			if(dungeon.map[x][y].monsterIndex<monsters.count)
-			{
-				toPrint = monsters.list[dungeon.map[x][y].monsterIndex].toDisplay;
 			}
 			printf("%c", toPrint);
 		}
