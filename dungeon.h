@@ -25,7 +25,7 @@ typedef enum terrain_tile {
 } terrain_tile_t;
 
 typedef struct monster {
-	int type, x, y;
+	int type; 
 	char toDisplay;
 } monster_t;
 
@@ -37,7 +37,6 @@ typedef struct monster_list {
 typedef struct terrain_cell {
 	terrain_tile_t tile;
 	int monsterIndex;
-	int distFromPlayer;
 	unsigned char hardness;
 } terrain_cell_t;
 
@@ -61,13 +60,12 @@ typedef struct dungeon {
 
 typedef struct path_cell {
 	int x, y, dist;
-} path_cell;
+} path_cell_t;
 
 extern dungeon_t dungeon;
 extern monster_list monsters;
 
 void generateDungeon(void);
 void initializeDungeon();
-void setPathingDistances();
 
 #endif
