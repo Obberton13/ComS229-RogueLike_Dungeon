@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "generator.h"
+#include "dungeon.h"
 
 
 typedef enum dmode {

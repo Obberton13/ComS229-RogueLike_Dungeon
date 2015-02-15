@@ -3,7 +3,7 @@
 #include<stdio.h>//TODO TEMPORARY
 
 //used for the enum, which will be used globally
-#include "generator.h"
+#include "dungeon.h"
 
 void saveRoom(room_t room);
 void generateAllRooms(void);
