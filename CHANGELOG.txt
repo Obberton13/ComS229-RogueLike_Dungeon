@@ -23,8 +23,8 @@
 
 -----Project 1.03-----
 
-
-
+2015/02/15 03:37 - Added a generic bheap.c file, with header that I will be using for the pathfinding. It mostly works, so I will move on.
+2015/02/15 15:26 - Dungeon Generates a Player and a Monster, currently indescernable
 
 
 

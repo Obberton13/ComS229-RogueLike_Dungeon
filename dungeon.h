@@ -12,6 +12,7 @@ typedef enum terrain_tile {
 	ter_immutable,
 	ter_room,
 	ter_corridor,
+	ter_debug
 } terrain_tile_t;
 
 typedef struct terrain_cell {
@@ -34,7 +35,7 @@ typedef struct room_list {
 
 typedef struct dungeon {
 	terrain_cell_t** map;
-	room_list_t list;
+	room_list_t rooms;
 } dungeon_t;
 
 extern dungeon_t dungeon;

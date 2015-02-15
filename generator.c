@@ -5,25 +5,25 @@
 //used for the enum, which will be used globally
 #include "dungeon.h"
 
-void saveRoom(room_t room);
-void generateAllRooms(void);
-int generateRoom(void);
-int canPlaceRoom(room_t room);
-void connectAllRooms(void);
-int findClosestRoom(int i, int connected[30], int isConnected);
-void connectRooms(room_t room1, room_t room2);
-int inRoom(int x, int y, room_t room);
-int isConnected(int i, int connected[30]);
-
-//TODO temporary functions
-void printRooms(room_list_t list);
+static void saveRoom(room_t room);
+static void generateAllRooms(void);
+static int generateRoom(void);
+static int canPlaceRoom(room_t room);
+static void connectAllRooms(void);
+static int findClosestRoom(int i, int connected[30], int isConnected);
+static void connectRooms(room_t room1, room_t room2);
+static int inRoom(int x, int y, room_t room);
+static void spawnPlayer();
+static void spawnMonster();
 
 //this is the main function for this .c file.
 void generateDungeon()
 {
-	dungeon.list.count = 0;
+	dungeon.rooms.count = 0;
 	generateAllRooms();
 	connectAllRooms();
+	spawnPlayer();
+	spawnMonster();
 	return;
 }
 
@@ -54,12 +54,12 @@ void initializeDungeon()
 	}
 }
 
-void generateAllRooms()
+static void generateAllRooms()
 {
 	int failures = 0;
-	while((dungeon.list.count<MIN_ROOMS
+	while((dungeon.rooms.count<MIN_ROOMS
 		||failures<MAX_PLACEMENT_ATTEMPTS)
-		&&dungeon.list.count<MAX_ROOMS)
+		&&dungeon.rooms.count<MAX_ROOMS)
 	{
 		if(!generateRoom())
 		{
@@ -72,7 +72,7 @@ void generateAllRooms()
 	}
 }
 
-int generateRoom()
+static int generateRoom()
 {
 	room_t room; 
 	room.x = random()%DUNGEON_X;
@@ -88,7 +88,7 @@ int generateRoom()
 	return 1;
 }
 
-void saveRoom(room_t room) 
+static void saveRoom(room_t room) 
 {
 	int x, y;
 	for(x=room.x;x<room.x+room.w;x++)
@@ -98,12 +98,12 @@ void saveRoom(room_t room)
 			dungeon.map[x][y].tile = ter_room;
 		}
 	}
-	dungeon.list.list[dungeon.list.count]=room;
-	dungeon.list.count+=1;
+	dungeon.rooms.list[dungeon.rooms.count]=room;
+	dungeon.rooms.count+=1;
 	return;
 }
 
-int canPlaceRoom(room_t room) 
+static int canPlaceRoom(room_t room) 
 {
 	if(room.x<ROOM_SEPARATION
 		||room.y<ROOM_SEPARATION
@@ -126,7 +126,7 @@ int canPlaceRoom(room_t room)
 	return 0;
 }
 
-void connectAllRooms()
+static void connectAllRooms()
 {
 	int i;
 	int connected[MAX_ROOMS];
@@ -135,7 +135,7 @@ void connectAllRooms()
 		connected[i]=0;
 	}
 	connected[0] = 1;
-	for(i=0;i<dungeon.list.count;i++)
+	for(i=0;i<dungeon.rooms.count;i++)
 	{
 		int closest = findClosestRoom(i, connected, 1);
 		if(closest == -1)
@@ -147,26 +147,26 @@ void connectAllRooms()
 		{
 			continue;
 		}
-		connectRooms(dungeon.list.list[closest], dungeon.list.list[closestConnected]);
+		connectRooms(dungeon.rooms.list[closest], dungeon.rooms.list[closestConnected]);
 		connected[closest]=1;
 	}
 }
 
-int findClosestRoom(int i, int connected[30], int isConnected)
+static int findClosestRoom(int i, int connected[30], int isConnected)
 {
 	int x;
 	int closest = -1;
 	int minDist = INT_MAX; //maximum value for uint. I should just include limits.h
-	int cX = dungeon.list.list[i].x + (dungeon.list.list[i].w/2);
-	int cY = dungeon.list.list[i].y + (dungeon.list.list[i].h/2);
-	for(x=dungeon.list.count-1;x>=0;x--)
+	int cX = dungeon.rooms.list[i].x + (dungeon.rooms.list[i].w/2);
+	int cY = dungeon.rooms.list[i].y + (dungeon.rooms.list[i].h/2);
+	for(x=dungeon.rooms.count-1;x>=0;x--)
 	{
 		if(connected[x]==isConnected)
 		{
 			continue;
 		}
-		int centerX = dungeon.list.list[x].x+(dungeon.list.list[x].w/2);
-		int centerY = dungeon.list.list[x].y+(dungeon.list.list[x].h/2);
+		int centerX = dungeon.rooms.list[x].x+(dungeon.rooms.list[x].w/2);
+		int centerY = dungeon.rooms.list[x].y+(dungeon.rooms.list[x].h/2);
 		int dx = centerX-cX;
 		int dy = centerY-cY;
 		int dist = ((dx*dx)+(dy*dy)); //technically sqr root, but that doesn't really matter
@@ -179,7 +179,7 @@ int findClosestRoom(int i, int connected[30], int isConnected)
 	return closest;
 }
 
-void connectRooms(room_t room1, room_t room2)
+static void connectRooms(room_t room1, room_t room2)
 {
 	int x = room1.x+(room1.w/2);
 	int y = room1.y+(room1.h/2);
@@ -314,11 +314,28 @@ void connectRooms(room_t room1, room_t room2)
 	}
 }
 
-int inRoom(int x, int y, room_t room)
+static int inRoom(int x, int y, room_t room)
 {
 	if(x<=room.x||x>=room.x+room.w-1||y<=room.y||y>=room.y+room.h-1)
 	{
 		return 1;
 	}
 	return 0;
+}
+
+static void spawnPlayer()
+{
+	int room = rand()%dungeon.rooms.count;
+	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
+	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
+	dungeon.map[x][y].tile = ter_debug;
+}
+
+static void spawnMonster()
+{
+	int room = rand()%dungeon.rooms.count;
+	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
+	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
+	dungeon.map[x][y].tile = ter_debug;
+	
 }

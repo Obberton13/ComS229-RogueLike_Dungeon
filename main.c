@@ -129,6 +129,9 @@ void printMap()
 				case ter_corridor:
 					toPrint = ',';
 					break;
+				case ter_debug:
+					toPrint = '*';
+					break;
 				default:
 					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y].tile);
 					return;
@@ -184,14 +187,14 @@ void save_dungeon(FILE *f)
 			fwrite(values, sizeof(values), 1, f);
 		}
 	}
-	fwrite(&dungeon.list.count, sizeof(dungeon.list.count), 1, f);
-	for(x=0;x<dungeon.list.count;x++)
+	fwrite(&dungeon.rooms.count, sizeof(dungeon.rooms.count), 1, f);
+	for(x=0;x<dungeon.rooms.count;x++)
 	{
 		unsigned char values[4];
-		values[0] = dungeon.list.list[x].x;
-		values[1] = dungeon.list.list[x].y;
-		values[2] = dungeon.list.list[x].w;
-		values[3] = dungeon.list.list[x].h;
+		values[0] = dungeon.rooms.list[x].x;
+		values[1] = dungeon.rooms.list[x].y;
+		values[2] = dungeon.rooms.list[x].w;
+		values[3] = dungeon.rooms.list[x].h;
 		fwrite(values, sizeof(values), 1, f);
 	}
 }
@@ -226,9 +229,9 @@ int load_dungeon(FILE *f)
 			}
 		}
 	}
-	fread(&dungeon.list.count, sizeof(dungeon.list.count), 1, f);
+	fread(&dungeon.rooms.count, sizeof(dungeon.rooms.count), 1, f);
 	filesize-=2;
-	for(x=0;x<dungeon.list.count;x++)
+	for(x=0;x<dungeon.rooms.count;x++)
 	{
 		if(filesize<0)
 		{
@@ -237,10 +240,10 @@ int load_dungeon(FILE *f)
 		}
 		unsigned char values[4];
 		fread(values, sizeof(values), 1, f);
-		dungeon.list.list[x].x = values[0];
-		dungeon.list.list[x].y = values[1];
-		dungeon.list.list[x].w = values[2];
-		dungeon.list.list[x].h = values[3];
+		dungeon.rooms.list[x].x = values[0];
+		dungeon.rooms.list[x].y = values[1];
+		dungeon.rooms.list[x].w = values[2];
+		dungeon.rooms.list[x].h = values[3];
 		filesize-=4;
 	}
 	return 0;
@@ -249,7 +252,7 @@ int load_dungeon(FILE *f)
 long int calculate_file_size()
 {
 	long int size = 160*96*4;//all of the dungeon tiles
-	size += dungeon.list.count*4;//values for all of the rooms
+	size += dungeon.rooms.count*4;//values for all of the rooms
 	size += 2;//short containing number of rooms
 	return size;
 }
