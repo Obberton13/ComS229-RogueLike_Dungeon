@@ -19,7 +19,6 @@ static void spawnMonster();
 //this is the main function for this .c file.
 void generateDungeon()
 {
-	dungeon.rooms.count = 0;
 	generateAllRooms();
 	connectAllRooms();
 	spawnPlayer();
@@ -27,12 +26,36 @@ void generateDungeon()
 	return;
 }
 
-void initializeDungeon()
+void dungeon_init()
 {
 	int x, y;
+	//initialize the rooms part of the dungeon
+	dungeon.rooms.count = 0;
+	for(x=0;x<MAX_ROOMS;x++)
+	{
+		dungeon.rooms.list[x].x = 0;
+		dungeon.rooms.list[x].y = 0;
+		dungeon.rooms.list[x].w = 0;
+		dungeon.rooms.list[x].h = 0;
+		dungeon.rooms.list[x].size = 0;
+	}
+	//TODO initialize the monsters part of the dungeon
+	dungeon.monsters.count = 0;
+	for(x=0;x<MAX_MONSTERS;x++)
+	{
+		dungeon.monsters.list[x].x = 0;
+		dungeon.monsters.list[x].y = 0;
+		dungeon.monsters.list[x].y = 0;
+	}
+	//initialize the map part of the dungeon
+	dungeon.map = (terrain_cell_t**) malloc(sizeof(terrain_cell_t*)*DUNGEON_X);
 	for(x=0;x<DUNGEON_X;x++)
 	{
-		for(y=0;y<DUNGEON_Y;y++)
+		dungeon.map[x] = (terrain_cell_t*) malloc(sizeof(terrain_cell_t)*DUNGEON_Y);
+	}
+	for(x=0;x<DUNGEON_X;x++)
+	{
+		for (y=0;y<DUNGEON_Y;y++)
 		{
 			dungeon.map[x][y].tile = ter_rock;
 			dungeon.map[x][y].hardness = random() % 254+1;
@@ -329,6 +352,9 @@ static void spawnPlayer()
 	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
 	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
 	dungeon.map[x][y].tile = ter_debug;
+	dungeon.monsters.list[dungeon.monsters.count].x = x;
+	dungeon.monsters.list[dungeon.monsters.count].y = y;
+	dungeon.monsters.count++;
 }
 
 static void spawnMonster()
@@ -337,5 +363,7 @@ static void spawnMonster()
 	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
 	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
 	dungeon.map[x][y].tile = ter_debug;
-	
+	dungeon.monsters.list[dungeon.monsters.count].x = x;
+	dungeon.monsters.list[dungeon.monsters.count].y = y;
+	dungeon.monsters.count++;
 }

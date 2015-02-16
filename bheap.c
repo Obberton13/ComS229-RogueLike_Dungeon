@@ -44,6 +44,23 @@ void* bheap_remove(bheap_t *heap)
 	return toReturn;
 }
 
+void bheap_item_changed(bheap_t *heap, void *item)
+{
+	int x;
+	for(x=0;x<heap->size;x++)
+	{
+		if(heap->items[x]==item)
+		{
+			break;
+		}
+	}
+	swap(heap, x, heap->size);
+	percolate_up(heap, heap->size);
+	//I have to check both because it is possible that the last value was larger than the item removed.
+	percolate_down(heap, x);
+	percolate_up(heap, x);
+}
+
 void bheap_destroy(bheap_t *heap)
 {
 	free(heap->items);

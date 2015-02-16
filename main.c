@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "dungeon.h"
+#include "pathfinding.h"
 
 
 typedef enum dmode {
@@ -57,13 +58,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	srand(seed);
-	dungeon.map = (terrain_cell_t**) malloc(sizeof(terrain_cell_t*)*DUNGEON_X);
-	int x;
-	for(x=0;x<DUNGEON_X;x++)
-	{
-		dungeon.map[x] = (terrain_cell_t*) malloc(sizeof(terrain_cell_t)*DUNGEON_Y);
-	}
-	initializeDungeon();
+	dungeon_init();
 	if(m!=mode_load)
 	{
 		generateDungeon();
@@ -79,6 +74,11 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Error loading the file\n");
 			return 1;
 		}
+	}
+	int x;
+	for(x=1;x<dungeon.monsters.count;x++)
+	{
+		find_path(x);//this isn't working for some reason...
 	}
 	printMap();	
 	if(m==mode_save)

@@ -6,6 +6,7 @@
 #define ROOM_MIN_H 5
 #define ROOM_SEPARATION 3
 #define MAX_PLACEMENT_ATTEMPTS 2000
+#define MAX_MONSTERS 20
 
 typedef enum terrain_tile {
 	ter_rock,
@@ -33,12 +34,23 @@ typedef struct room_list {
 	room_t list[MAX_ROOMS];
 } room_list_t;
 
+typedef struct monster {
+	int x, y;
+	unsigned int flags;
+} monster_t;
+
+typedef struct monster_list {
+	monster_t list[MAX_MONSTERS];
+	int count;
+} monster_list_t;
+
 typedef struct dungeon {
 	terrain_cell_t** map;
 	room_list_t rooms;
+	monster_list_t monsters;
 } dungeon_t;
 
 extern dungeon_t dungeon;
 
 void generateDungeon(void);
-void initializeDungeon();
+void dungeon_init(void);
