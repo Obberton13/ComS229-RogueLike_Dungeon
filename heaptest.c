@@ -3,7 +3,7 @@
 
 #include"bheap.h"
 
-#define NUMBER 150
+#define NUMBER 100
 
 int compare(void *v1, void *v2)
 {
@@ -15,6 +15,7 @@ int compare(void *v1, void *v2)
 void printheap(bheap_t *heap)
 {
 	int i;
+	printf("heap\n");
 	for(i=0;i<heap->size;i++)
 	{
 		int *val = heap->items[i];
@@ -37,22 +38,33 @@ int main(int argc, char *argv[])
 	}
 	for(i=0;i<NUMBER;i++)
 	{
+		printf("%d ", arr[i]);
+	}
+	for(i=0;i<NUMBER;i++)
+	{
 		bheap_add(&heap, (void*)&arr[i]);
 		printf("%d->", arr[i]);
-		printheap(&heap);
+		//printheap(&heap);
 	}
+	printf("\n\n\n\n\n");
+	printf("Array\n");
+	for(i=0;i<NUMBER;i++)
+	{
+		printf("%d ", arr[i]);
+	}
+	printheap(&heap);
 	for(i=0;i<5;i++)
 	{
 		int z = rand()%NUMBER;
 		arr[z] = rand()%100;
 		bheap_item_changed(&heap, (void*)&arr[z]);
-		printheap(&heap);
+		//printheap(&heap);
 	}//*/
 	int ret[NUMBER];
 	for(i=0;i<NUMBER;i++)
 	{
 		ret[i]=*(int*)bheap_remove(&heap);
-		printheap(&heap);
+		//printheap(&heap);
 	}
 	for(i=0;i<NUMBER;i++)
 	{

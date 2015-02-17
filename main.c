@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
 {
 	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
-	printf("Default Seed: %d\n", seed);
 	FILE *f = NULL;
 	if(argc>1)
 	{

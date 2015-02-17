@@ -42,17 +42,21 @@ void* bheap_remove(bheap_t *heap)
 	return toReturn;
 }
 
-void bheap_item_changed(bheap_t *heap, void *item)
+void bheap_item_changed(bheap_t *heap, void *value)
 {
-	//printf("ITEM CHANGED: %p\n", item);
 	int x;
 	for(x=0;x<heap->size;x++)
 	{
-		if(heap->items[x]==item)
+		if(heap->items[x]==value)
 		{
 			break;
 		}
 	}
+	if(x==heap->size)
+	{
+		return;
+	}
+	printf("Item Actually Changed");
 	swap(heap, x, heap->size-1);
 	percolate_up(heap, heap->size-1);
 	//I have to check both because it is possible that the last value was larger than the item removed.

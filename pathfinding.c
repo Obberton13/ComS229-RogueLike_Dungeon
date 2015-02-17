@@ -40,10 +40,9 @@ void find_path(int monsterIndex)
 	bheap_add(&heap, distance[x][y]);
 	char offsetX[8] = {0,0,1,1,1,-1,-1,-1};
 	char offsetY[8] = {1,-1,1,0,-1,1,0,-1};
-	while(heap.size)
+	while(heap.size)//I know the heap works perfectly.
 	{
 		path_cell_t *current = bheap_remove(&heap);
-		printf(" ");
 		x = current->x;
 		y = current->y;
 		int dist = current->distance;
@@ -52,6 +51,11 @@ void find_path(int monsterIndex)
 		{
 			int newX = x+offsetX[i];
 			int newY = y+offsetY[i];
+			if(dungeon.map[newX][newY].tile==ter_player)
+			{
+				distance[newX][newY]->previous = current;
+				goto exitloop;
+			}
 			if((distance[newX][newY]->distance>dist+1)
 			&&((dungeon.map[newX][newY].tile==ter_room)
 			||(dungeon.map[newX][newY].tile==ter_corridor)))
@@ -61,7 +65,7 @@ void find_path(int monsterIndex)
 				distance[newX][newY]->previous = current;
 				if(notify)
 				{
-					bheap_item_changed(&heap, distance[newX][newY]);
+					bheap_item_changed(&heap, &distance[newX][newY]);
 				}
 				else
 				{
@@ -70,6 +74,7 @@ void find_path(int monsterIndex)
 			}
 		}
 	}
+	exitloop://I was told today not to use these.
 	trace_path(distance);//pointer to an array of arrays of pointers to path cell t
 	bheap_destroy(&heap);
 	for(x=0;x<DUNGEON_X;x++)
@@ -85,7 +90,7 @@ static int compare(void *v1, void *v2)
 {
 	path_cell_t *c1 = v1;
 	path_cell_t *c2 = v2;
-	return c1->distance - c2->distance;
+	return c2->distance - c1->distance;
 }
 
 static void trace_path(path_cell_t *distance[DUNGEON_X][DUNGEON_Y])
