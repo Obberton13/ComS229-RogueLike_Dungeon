@@ -9,18 +9,17 @@ static void percolate_up(bheap_t *heap, int pos);
 static void percolate_down(bheap_t *heap, int pos);
 static void swap(bheap_t *heap, int pos1, int pos2);
 
-void bheap_init(bheap_t *heap, Comparator comp)
+void bheap_init(bheap_t *heap)
 {
 	heap->items = malloc(PTRSIZE*10);
 	heap->size = 0;
-	heap->compare = comp;
 	heap->alloc_size = 10;
 }
 
 void bheap_add(bheap_t *heap, void *value)
 {
 	if(heap->size+1>=heap->alloc_size)
-	{//TODO This probably has something wrong with it. Need to initialize all of the things to NULL
+	{
 		heap->items = realloc(heap->items, PTRSIZE*heap->alloc_size*2);
 		heap->alloc_size*=2;
 		if(!heap->items)
@@ -37,8 +36,7 @@ void bheap_add(bheap_t *heap, void *value)
 void* bheap_remove(bheap_t *heap)
 {
 	void*  toReturn = heap->items[0];
-	heap->size--;
-	heap->items[0] = heap->items[heap->size];
+	heap->items[0] = heap->items[--heap->size];
 	heap->items[heap->size] = NULL;
 	percolate_down(heap, 0);
 	return toReturn;
@@ -46,6 +44,7 @@ void* bheap_remove(bheap_t *heap)
 
 void bheap_item_changed(bheap_t *heap, void *item)
 {
+	//printf("ITEM CHANGED: %p\n", item);
 	int x;
 	for(x=0;x<heap->size;x++)
 	{
@@ -54,11 +53,10 @@ void bheap_item_changed(bheap_t *heap, void *item)
 			break;
 		}
 	}
-	swap(heap, x, heap->size);
-	percolate_up(heap, heap->size);
+	swap(heap, x, heap->size-1);
+	percolate_up(heap, heap->size-1);
 	//I have to check both because it is possible that the last value was larger than the item removed.
 	percolate_down(heap, x);
-	percolate_up(heap, x);
 }
 
 void bheap_destroy(bheap_t *heap)
@@ -83,20 +81,29 @@ static void percolate_down(bheap_t *heap, int pos)
 	int left = right-1;
 	if(right<heap->size)
 	{
-		if(heap->compare(heap->items[left], heap->items[right])>0)
+		if(heap->compare(heap->items[left], heap->items[right])>=0)//if left is greater than/equal to right
 		{
-			swap(heap, pos, left);
-			percolate_down(heap, left);
+			if(heap->compare(heap->items[left], heap->items[pos])>0)//and left is greater than pos
+			{
+				swap(heap, pos, left);//then swap the two
+				percolate_down(heap, left);//and continue in the left subtree
+			}
 		}
-		else
+		else//otherwise (if right > left)
 		{
-			swap(heap, pos, right);
-			percolate_down(heap, right);
+			if(heap->compare(heap->items[right], heap->items[pos])>0)//if right is greater than pos
+			{
+				swap(heap, pos, right);//swap the two
+				percolate_down(heap, right);//and continue in the right subtree
+			}
 		}
 	}
 	else if(left<heap->size)
 	{
-		swap(heap, pos, left);
+		if(heap->compare(heap->items[left], heap->items[pos])>0)
+		{
+			swap(heap, left, pos);
+		}
 	}
 }
 

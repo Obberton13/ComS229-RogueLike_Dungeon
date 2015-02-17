@@ -16,7 +16,7 @@ static void trace_path(path_cell_t *distance[DUNGEON_X][DUNGEON_Y]);
 
 void find_path(int monsterIndex)
 {
-	path_cell_t* distance[DUNGEON_X][DUNGEON_Y];
+	path_cell_t* distance[DUNGEON_X][DUNGEON_Y];//array of array of pointers to path cell t
 	
 	int x, y;
 	//initialize all the things
@@ -35,13 +35,15 @@ void find_path(int monsterIndex)
 	y = dungeon.monsters.list[monsterIndex].y;
 	distance[x][y]->distance = 0;
 	bheap_t heap;
-	bheap_init(&heap, compare);
+	heap.compare = compare;
+	bheap_init(&heap);
 	bheap_add(&heap, distance[x][y]);
 	char offsetX[8] = {0,0,1,1,1,-1,-1,-1};
 	char offsetY[8] = {1,-1,1,0,-1,1,0,-1};
 	while(heap.size)
 	{
 		path_cell_t *current = bheap_remove(&heap);
+		printf(" ");
 		x = current->x;
 		y = current->y;
 		int dist = current->distance;
@@ -68,11 +70,11 @@ void find_path(int monsterIndex)
 			}
 		}
 	}
-	trace_path(distance);
+	trace_path(distance);//pointer to an array of arrays of pointers to path cell t
 	bheap_destroy(&heap);
 	for(x=0;x<DUNGEON_X;x++)
 	{
-		for(y=0;y<DUNGEON_Y;y++)
+		for(y=0;y<DUNGEON_Y;y++) 
 		{
 			free(distance[x][y]);
 		}
@@ -83,7 +85,7 @@ static int compare(void *v1, void *v2)
 {
 	path_cell_t *c1 = v1;
 	path_cell_t *c2 = v2;
-	return c2->distance - c1->distance;
+	return c1->distance - c2->distance;
 }
 
 static void trace_path(path_cell_t *distance[DUNGEON_X][DUNGEON_Y])

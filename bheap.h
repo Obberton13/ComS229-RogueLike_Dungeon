@@ -11,7 +11,7 @@ typedef struct bheap {
 	int alloc_size;
 } bheap_t;
 
-void bheap_init(bheap_t *heap, int (*compare)(void *v1, void *v2));
+void bheap_init(bheap_t *heap);
 void bheap_add(bheap_t *heap, void *value);
 void* bheap_remove(bheap_t *heap);
 void bheap_item_changed(bheap_t *heap, void* item);

@@ -92,7 +92,8 @@ static void generateAllRooms()
 		{
 			failures++;
 		}
-	}
+	}//*/
+	//while(generateRoom());
 }
 
 static int generateRoom()
@@ -351,7 +352,8 @@ static void spawnPlayer()
 	int room = rand()%dungeon.rooms.count;
 	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
 	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
-	dungeon.map[x][y].tile = ter_debug;
+	printf("Player: %d, %d\n", x, y);
+	dungeon.map[x][y].tile = ter_player;
 	dungeon.monsters.list[dungeon.monsters.count].x = x;
 	dungeon.monsters.list[dungeon.monsters.count].y = y;
 	dungeon.monsters.count++;
@@ -362,7 +364,8 @@ static void spawnMonster()
 	int room = rand()%dungeon.rooms.count;
 	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
 	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
-	dungeon.map[x][y].tile = ter_debug;
+	printf("Monster: %d, %d\n", x, y);
+	dungeon.map[x][y].tile = ter_monster;
 	dungeon.monsters.list[dungeon.monsters.count].x = x;
 	dungeon.monsters.list[dungeon.monsters.count].y = y;
 	dungeon.monsters.count++;

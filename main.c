@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 {
 	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
+	printf("Default Seed: %d\n", seed);
 	FILE *f = NULL;
 	if(argc>1)
 	{
@@ -76,10 +77,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	int x;
-	for(x=1;x<dungeon.monsters.count;x++)
-	{
-		find_path(x);//this isn't working for some reason...
-	}
+	find_path(1);//this isn't working for some reason...
 	printMap();	
 	if(m==mode_save)
 	{
@@ -131,6 +129,18 @@ void printMap()
 					break;
 				case ter_debug:
 					toPrint = '*';
+					break;
+				case ter_debug2:
+					toPrint = 'd';
+					break;
+				case ter_debug3:
+					toPrint = '+';
+					break;
+				case ter_player:
+					toPrint = '@';
+					break;
+				case ter_monster:
+					toPrint = 'm';
 					break;
 				default:
 					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y].tile);
