@@ -1,9 +1,8 @@
-Usage: ./DungeonGame [-s <seed value>]
+Project 1.03
 
-Saving and loading:
-all of the important methods are in main.c:
-open_file() opens a file,
-save_dungeon() saves the dungeon.
-load_dungeon() loads the dungeon.
-
-I noticed that two cells in the lower right corner were behaving strangely when loading from the sample maps. I made sure to make sure that didn't happen any more.
+The major functions that I used for this were in pathfinding.c and bheap.c.
+pathfinding.c
+* find_path(int monsterindex)
+	This function is what applied the binary heap and made it useful. Right now it is backwards...I am pathfinding from the player to the monster, not the other way around, but hey, whatever. I don't think it will be that hard to switch around.
+bheap.c
+* All of the methods here were standard binary heap insertion, initialization, and deletion stuff except for bheap_item_changed. This is what my "decrease priority" operation is. When I update a value that the bheap keeps track of, I let it know with this method so it can resort things again.
