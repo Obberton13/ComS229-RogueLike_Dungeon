@@ -29,6 +29,12 @@
 2015/02/17 04:33 - Fixed percolate_down in bheap.c. Updated bheap_init to not take a function pointer. Users assign that themselves.
 2015/02/17 05:16 - I feel stupid. I spent the last 3 days trying to find out why I couldn't find the player, only to realize I WASN'T CHECKING TO SEE IF ANYTHING WAS THE PLAYER. So yea. It's done now.
 
+-----Project 1.04-----
+
+2015/02/19 14:55 - Added the command-line switch for the number of monsters, doesn't do anything yet
+2015/02/20 01:08 - Pathfinding with multiple monsters works. Player gets killed correctly. Still have to have monsters kill monsters.
+2015/02/20 01:31 - Implemented the initiative stuff, so monsters move according to their speed now.
+
 
 
 

@@ -13,16 +13,14 @@ static void connectAllRooms(void);
 static int findClosestRoom(int i, int connected[30], int isConnected);
 static void connectRooms(room_t room1, room_t room2);
 static int inRoom(int x, int y, room_t room);
-static void spawnPlayer();
-static void spawnMonster();
+static void spawnAllMonsters();
 
 //this is the main function for this .c file.
 void generateDungeon()
 {
 	generateAllRooms();
 	connectAllRooms();
-	spawnPlayer();
-	spawnMonster();
+	spawnAllMonsters();
 	return;
 }
 
@@ -45,7 +43,8 @@ void dungeon_init()
 	{
 		dungeon.monsters.list[x].x = 0;
 		dungeon.monsters.list[x].y = 0;
-		dungeon.monsters.list[x].y = 0;
+		dungeon.monsters.list[x].displayChar = 0;
+		dungeon.monsters.list[x].flags = 0;
 	}
 	//initialize the map part of the dungeon
 	dungeon.map = (terrain_cell_t**) malloc(sizeof(terrain_cell_t*)*DUNGEON_X);
@@ -59,6 +58,8 @@ void dungeon_init()
 		{
 			dungeon.map[x][y].tile = ter_rock;
 			dungeon.map[x][y].hardness = random() % 254+1;
+			dungeon.map[x][y].monsterIndex = MAX_MONSTERS;
+			dungeon.map[x][y].distToPlayer = INT_MAX;
 		}
 	}
 	for(x=0;x<DUNGEON_X;x++)
@@ -176,11 +177,11 @@ static void connectAllRooms()
 	}
 }
 
-static int findClosestRoom(int i, int connected[30], int isConnected)
+static int findClosestRoom(int i, int connected[MAX_ROOMS], int isConnected)
 {
 	int x;
 	int closest = -1;
-	int minDist = INT_MAX; //maximum value for uint. I should just include limits.h
+	int minDist = INT_MAX; 
 	int cX = dungeon.rooms.list[i].x + (dungeon.rooms.list[i].w/2);
 	int cY = dungeon.rooms.list[i].y + (dungeon.rooms.list[i].h/2);
 	for(x=dungeon.rooms.count-1;x>=0;x--)
@@ -347,24 +348,33 @@ static int inRoom(int x, int y, room_t room)
 	return 0;
 }
 
-static void spawnPlayer()
+static void spawnAllMonsters()
 {
-	int room = rand()%dungeon.rooms.count;
-	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
-	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
-	dungeon.map[x][y].tile = ter_player;
-	dungeon.monsters.list[dungeon.monsters.count].x = x;
-	dungeon.monsters.list[dungeon.monsters.count].y = y;
-	dungeon.monsters.count++;
+	int i;
+	for(i=0;i<MAX_MONSTERS;i++)
+	{
+		int room = rand()%dungeon.rooms.count;
+		int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
+		int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
+		dungeon.map[x][y].monsterIndex = dungeon.monsters.count;
+		dungeon.monsters.list[dungeon.monsters.count].x = x;
+		dungeon.monsters.list[dungeon.monsters.count].y = y;
+		if(dungeon.monsters.count)
+		{
+			char dispChar = rand()%('z'-'a')+'a';
+			char speed = rand()%11+5;
+			dungeon.monsters.list[dungeon.monsters.count].displayChar = dispChar;
+			dungeon.monsters.list[dungeon.monsters.count].flags = rand()%INT_MAX;
+			dungeon.monsters.list[dungeon.monsters.count].speed = speed;
+			dungeon.monsters.list[dungeon.monsters.count].initiative = speed;
+		}
+		else
+		{
+			dungeon.monsters.list[dungeon.monsters.count].displayChar = '@';
+			dungeon.monsters.list[dungeon.monsters.count].speed = 10;
+			dungeon.monsters.list[dungeon.monsters.count].initiative = 10;
+		}
+		dungeon.monsters.count++;
+	}
 }
 
-static void spawnMonster()
-{
-	int room = rand()%dungeon.rooms.count;
-	int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
-	int y = (rand()%dungeon.rooms.list[room].h)+dungeon.rooms.list[room].y;
-	dungeon.map[x][y].tile = ter_monster;
-	dungeon.monsters.list[dungeon.monsters.count].x = x;
-	dungeon.monsters.list[dungeon.monsters.count].y = y;
-	dungeon.monsters.count++;
-}

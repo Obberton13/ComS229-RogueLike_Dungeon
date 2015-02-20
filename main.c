@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
 
 #include "dungeon.h"
@@ -26,19 +27,20 @@ int main(int argc, char *argv[])
 	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
 	FILE *f = NULL;
+	int inputMonsters = 0;
 	if(argc>1)
 	{
 		if(strcmp(argv[1], "--help")==0)
 		{
-			fprintf(stderr, "Usage: DungeonGame [-s seed]\n");
+			fprintf(stderr, USAGE);
 			return 0;
 		}
 		if(strcmp(argv[1], "-s")==0)
 		{
 			if (argc!=3) 
 			{
-				fprintf(stderr, "Usage: DungeonGame [-s seed]\n");
-				return 0;
+				fprintf(stderr, USAGE);
+				return 1;
 			}
 			int length = strlen(argv[2]), i;
 			seed = 0;
@@ -55,6 +57,19 @@ int main(int argc, char *argv[])
 		if(strcmp(argv[1], "--load")==0)
 		{
 			m = mode_load;
+		}
+		if(strcmp(argv[1], "--nummon"))
+		{
+			if(argc!=3)
+			{
+				fprintf(stderr, USAGE);
+				return 1;
+			}
+			int length = strlen(argv[2]), i;
+			for(i=0;i<length;i++)
+			{
+				inputMonsters = (10*inputMonsters) + (argv[2][i] - '0');
+			}
 		}
 	}
 	srand(seed);
@@ -75,9 +90,32 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	int x;
-	find_path(1);//this isn't working for some reason...
-	printMap();	
+	int x = 0;
+	find_paths();
+	do
+	{
+		int i;
+		for(i=0;i<dungeon.monsters.count&&!x;i++)
+		{
+			dungeon.monsters.list[i].initiative--;//decreas the initiative
+			if(!dungeon.monsters.list[i].initiative)//if initiative counter has reached 0
+			{
+				move_monster(i, &x);//move the monster
+				dungeon.monsters.list[i].initiative = dungeon.monsters.list[i].speed;//reset the initiative
+				if(i==0)//if the current monster is the player
+				{
+					find_paths();//recalculate the distances to the player
+					printMap();//refresh the screen
+					sleep(1);//and wait to do it again next time.
+				}
+			}
+		}
+	}while(!x);
+	if(x==1)
+	{
+		printf("Oh, no, the player died!\n");
+	}
+
 	if(m==mode_save)
 	{
 		//TODO Save the dungeon to ~/.rlg229/dungeon
@@ -111,6 +149,15 @@ void printMap()
 	{
 		for(x=0;x<DUNGEON_X;x++)
 		{
+			/*int dist = dungeon.map[x][y].distToPlayer;
+			if(dist>224)
+			{
+				printf("ff");
+			}
+			else
+			{
+				printf("%2x", dist);
+			}//*/
 			char toPrint;
 			switch(dungeon.map[x][y].tile)
 			{
@@ -135,17 +182,15 @@ void printMap()
 				case ter_debug3:
 					toPrint = '+';
 					break;
-				case ter_player:
-					toPrint = '@';
-					break;
-				case ter_monster:
-					toPrint = 'm';
-					break;
 				default:
 					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y].tile);
 					return;
 			}
-			printf("%c", toPrint);
+			if(dungeon.map[x][y].monsterIndex!=MAX_MONSTERS)
+			{
+				toPrint = dungeon.monsters.list[dungeon.map[x][y].monsterIndex].displayChar;
+			}
+			printf("%c", toPrint);//*/
 		}
 		printf("\n");
 	}

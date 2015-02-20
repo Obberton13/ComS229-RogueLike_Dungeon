@@ -7,6 +7,7 @@
 #define ROOM_SEPARATION 3
 #define MAX_PLACEMENT_ATTEMPTS 2000
 #define MAX_MONSTERS 20
+#define USAGE "Usage: DungeonGame [-s <seed>][--save][--load][--nummon <monsters>]\n"
 
 typedef enum terrain_tile {
 	ter_rock,
@@ -15,14 +16,14 @@ typedef enum terrain_tile {
 	ter_corridor,
 	ter_debug,
 	ter_debug2,
-	ter_debug3,
-	ter_player,
-	ter_monster
+	ter_debug3
 } terrain_tile_t;
 
 typedef struct terrain_cell {
 	terrain_tile_t tile;
+	int distToPlayer;
 	unsigned char hardness;
+	int monsterIndex;
 } terrain_cell_t;
 
 typedef struct room {
@@ -40,7 +41,9 @@ typedef struct room_list {
 
 typedef struct monster {
 	int x, y;
+	char displayChar;
 	unsigned int flags;
+	char speed, initiative;
 } monster_t;
 
 typedef struct monster_list {
@@ -49,7 +52,7 @@ typedef struct monster_list {
 } monster_list_t;
 
 typedef struct dungeon {
-	terrain_cell_t** map;
+	terrain_cell_t **map;
 	room_list_t rooms;
 	monster_list_t monsters;
 } dungeon_t;

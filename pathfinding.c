@@ -7,14 +7,12 @@
 #include"pathfinding.h"
 
 typedef struct path_cell {
-	struct path_cell *previous;
 	int distance, x, y;
 } path_cell_t;
 
 static int compare(void *v1, void *v2);
-static void trace_path(path_cell_t *distance[DUNGEON_X][DUNGEON_Y]);
 
-void find_path(int monsterIndex)
+void find_paths()
 {
 	path_cell_t* distance[DUNGEON_X][DUNGEON_Y];//array of array of pointers to path cell t
 	
@@ -28,19 +26,19 @@ void find_path(int monsterIndex)
 			distance[x][y]->distance = INT_MAX;
 			distance[x][y]->x = x;
 			distance[x][y]->y = y;
-			distance[x][y]->previous = NULL;
 		}
 	}
-	x = dungeon.monsters.list[monsterIndex].x;
-	y = dungeon.monsters.list[monsterIndex].y;
+	x = dungeon.monsters.list[0].x;
+	y = dungeon.monsters.list[0].y;
 	distance[x][y]->distance = 0;
+	dungeon.map[x][y].distToPlayer = 0;
 	bheap_t heap;
 	heap.compare = compare;
 	bheap_init(&heap);
 	bheap_add(&heap, distance[x][y]);
 	char offsetX[8] = {0,0,1,1,1,-1,-1,-1};
 	char offsetY[8] = {1,-1,1,0,-1,1,0,-1};
-	while(heap.size)//I know the heap works perfectly.
+	while(heap.size)
 	{
 		path_cell_t *current = bheap_remove(&heap);
 		x = current->x;
@@ -51,18 +49,13 @@ void find_path(int monsterIndex)
 		{
 			int newX = x+offsetX[i];
 			int newY = y+offsetY[i];
-			if(dungeon.map[newX][newY].tile==ter_player)
-			{
-				distance[newX][newY]->previous = current;
-				goto exitloop;
-			}
 			if((distance[newX][newY]->distance>dist+1)
 			&&((dungeon.map[newX][newY].tile==ter_room)
 			||(dungeon.map[newX][newY].tile==ter_corridor)))
 			{
+				dungeon.map[newX][newY].distToPlayer = dist+1;
 				int notify = (INT_MAX-distance[newX][newY]->distance);
 				distance[newX][newY]->distance = dist+1;
-				distance[newX][newY]->previous = current;
 				if(notify)
 				{
 					bheap_item_changed(&heap, &distance[newX][newY]);
@@ -74,8 +67,6 @@ void find_path(int monsterIndex)
 			}
 		}
 	}
-	exitloop://I was told today not to use these.
-	trace_path(distance);//pointer to an array of arrays of pointers to path cell t
 	bheap_destroy(&heap);
 	for(x=0;x<DUNGEON_X;x++)
 	{
@@ -93,14 +84,42 @@ static int compare(void *v1, void *v2)
 	return c2->distance - c1->distance;
 }
 
-static void trace_path(path_cell_t *distance[DUNGEON_X][DUNGEON_Y])
+void move_monster(int monsterIndex, int *result)
 {
-	int x = dungeon.monsters.list[0].x;
-	int y = dungeon.monsters.list[0].y;
-	path_cell_t *previous = distance[x][y]->previous;
-	while(previous)
+	int x = dungeon.monsters.list[monsterIndex].x;
+	int y = dungeon.monsters.list[monsterIndex].y;
+	int offsetX[8] = {0,0,1,1,1,-1,-1,-1};
+	int offsetY[8] = {1,-1,1,0,-1,1,0,-1};
+	int dist = INT_MAX;
+	int i, j=0, newX, newY;
+	for(i=0;i<8;i++)
 	{
-		dungeon.map[previous->x][previous->y].tile = ter_debug;
-		previous = previous->previous;
+		newX = x+offsetX[i];
+		newY = y+offsetY[i];
+		if(dungeon.map[newX][newY].distToPlayer<dist)
+		{
+			dist = dungeon.map[newX][newY].distToPlayer;
+			j=i;
+		}
+	}
+	newX = x + offsetX[j];
+	newY = y + offsetY[j];
+	if(dungeon.map[newX][newY].monsterIndex==MAX_MONSTERS)
+	{
+		dungeon.monsters.list[monsterIndex].x = newX;
+		dungeon.monsters.list[monsterIndex].y = newY;
+		dungeon.map[x][y].monsterIndex = MAX_MONSTERS;
+		dungeon.map[newX][newY].monsterIndex = monsterIndex;
+		*result = 0;//this one correctly assigns to x
+	}
+	else if(dungeon.map[newX][newY].monsterIndex==0)
+	{
+		//end the game
+		*result = 1;//this one does not. Huh.
+	}
+	else
+	{
+		//kill the monster this monster landed on
+		*result = 0;
 	}
 }

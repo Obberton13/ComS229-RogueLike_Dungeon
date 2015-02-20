@@ -1,6 +1,7 @@
 #ifndef PATHFINDING_H
 #define PATHFINDING_H
 
-void find_path(int monsterIndex);
+void find_paths();
+void move_monster(int monsterIndex, int *result);
 
 #endif

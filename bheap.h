@@ -4,6 +4,8 @@
 //return negative if v2 is less than v2, 0 if equal, positive otherwise
 typedef int (*Comparator)(void *v1, void *v2);
 
+typedef struct bheap_node bheap_node_t;
+
 typedef struct bheap {
 	void **items;
 	int size;

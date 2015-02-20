@@ -5,6 +5,11 @@
 
 #define PTRSIZE sizeof(void*)
 
+struct bheap_node {
+	int index;
+	void *item;
+};
+
 static void percolate_up(bheap_t *heap, int pos);
 static void percolate_down(bheap_t *heap, int pos);
 static void swap(bheap_t *heap, int pos1, int pos2);
@@ -44,6 +49,7 @@ void* bheap_remove(bheap_t *heap)
 
 void bheap_item_changed(bheap_t *heap, void *value)
 {
+	//TODO this needs to be changed.
 	int x;
 	for(x=0;x<heap->size;x++)
 	{
