@@ -100,31 +100,41 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	int x = 0;
+	//Here is the main game loop
 	find_paths();
+	char result;
+	int i;
 	do
 	{
-		int i;
-		for(i=0;i<dungeon.monsters.count&&!x;i++)
+		int numDead = 0;
+		for(i=0;i<dungeon.monsters.count;i++)
 		{
-			dungeon.monsters.list[i].initiative--;//decreas the initiative
+			if(dungeon.monsters.list[i].initiative<0) 
+			{
+				numDead++;
+				continue;
+			}
+			dungeon.monsters.list[i].initiative--;//decrease the initiative
 			if(!dungeon.monsters.list[i].initiative)//if initiative counter has reached 0
 			{
-				move_monster(i, &x);//move the monster
+				move_monster(i);//move the monster
 				dungeon.monsters.list[i].initiative = dungeon.monsters.list[i].speed;//reset the initiative
 				if(i==0)//if the current monster is the player
 				{
 					find_paths();//recalculate the distances to the player
 					printMap();//refresh the screen
-					sleep(1);//and wait to do it again next time.
+					usleep(100000);//and wait to do it again next time.
 				}
 			}
+			if(dungeon.monsters.list[0].initiative<0)result = 2;
 		}
-	}while(!x);
-	if(x==1)
-	{
-		printf("Oh, no, the player died!\n");
-	}
+		if(numDead==dungeon.monsters.count-1)
+		{
+			result = 1;
+		}
+	}while(result==0);
+	if(result==2)printf("Oh, no, the player died!\n");
+	else if(result==1)printf("GG, you killed all of the things");
 
 	if(m==mode_save)
 	{
@@ -140,6 +150,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
+	int x;
 	for(x=0;x<DUNGEON_X;x++)
 	{
 		free(dungeon.map[x]);

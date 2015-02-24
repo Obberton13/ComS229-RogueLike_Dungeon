@@ -362,7 +362,7 @@ static void spawnAllMonsters()
 		if(dungeon.monsters.count)
 		{
 			char dispChar = rand()%('z'-'a')+'a';
-			char speed = rand()%11+5;
+			char speed = 100/(rand()%11+5);
 			dungeon.monsters.list[dungeon.monsters.count].displayChar = dispChar;
 			dungeon.monsters.list[dungeon.monsters.count].flags = rand();
 			dungeon.monsters.list[dungeon.monsters.count].speed = speed;

@@ -2,6 +2,6 @@
 #define PATHFINDING_H
 
 void find_paths();
-void move_monster(int monsterIndex, int *result);
+void move_monster(int monsterIndex);
 
 #endif

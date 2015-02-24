@@ -75,6 +75,9 @@ void find_paths()
 			free(distance[x][y]);
 		}
 	}
+	x = dungeon.monsters.list[0].x;
+	y = dungeon.monsters.list[0].y;
+	dungeon.map[x][y].distToPlayer = 0;
 }
 
 static int compare(void *v1, void *v2)
@@ -84,7 +87,7 @@ static int compare(void *v1, void *v2)
 	return c2->distance - c1->distance;
 }
 
-void move_monster(int monsterIndex, int *result)
+void move_monster(int monsterIndex)
 {
 	int x = dungeon.monsters.list[monsterIndex].x;
 	int y = dungeon.monsters.list[monsterIndex].y;
@@ -104,17 +107,12 @@ void move_monster(int monsterIndex, int *result)
 	}
 	newX = x + offsetX[j];
 	newY = y + offsetY[j];
-	if(dungeon.map[newX][newY].monsterIndex)
+	if(dungeon.map[newX][newY].monsterIndex!=dungeon.monsters.max)//If it is a monster
 	{
-		dungeon.monsters.list[monsterIndex].x = newX;
-		dungeon.monsters.list[monsterIndex].y = newY;
-		dungeon.map[x][y].monsterIndex = dungeon.monsters.max;
-		dungeon.map[newX][newY].monsterIndex = monsterIndex;
-		*result = 0;
+		dungeon.monsters.list[dungeon.map[newX][newY].monsterIndex].initiative = -1;//set its initiative to -1 (kills it)
 	}
-	else
-	{
-		//end the game
-		*result = 1;
-	}
+	dungeon.monsters.list[monsterIndex].x = newX;//move the monster
+	dungeon.monsters.list[monsterIndex].y = newY;
+	dungeon.map[x][y].monsterIndex = dungeon.monsters.max;
+	dungeon.map[newX][newY].monsterIndex = monsterIndex;
 }
