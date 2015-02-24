@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <limits.h>
 
 #include "dungeon.h"
 #include "pathfinding.h"
@@ -27,7 +28,7 @@ int main(int argc, char *argv[])
 	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
 	FILE *f = NULL;
-	int inputMonsters = 0;
+	dungeon.monsters.max = 0;
 	if(argc>1)
 	{
 		if(strcmp(argv[1], "--help")==0)
@@ -35,7 +36,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, USAGE);
 			return 0;
 		}
-		if(strcmp(argv[1], "-s")==0)
+		else if(strcmp(argv[1], "-s")==0)
 		{
 			if (argc!=3) 
 			{
@@ -50,15 +51,15 @@ int main(int argc, char *argv[])
 			}
 			printf("Seed: %d\n", seed);
 		}
-		if(strcmp(argv[1], "--save")==0)
+		else if(strcmp(argv[1], "--save")==0)
 		{
 			m = mode_save;
 		}
-		if(strcmp(argv[1], "--load")==0)
+		else if(strcmp(argv[1], "--load")==0)
 		{
 			m = mode_load;
 		}
-		if(strcmp(argv[1], "--nummon"))
+		else if(strcmp(argv[1], "--nummon")==0)
 		{
 			if(argc!=3)
 			{
@@ -68,10 +69,19 @@ int main(int argc, char *argv[])
 			int length = strlen(argv[2]), i;
 			for(i=0;i<length;i++)
 			{
-				inputMonsters = (10*inputMonsters) + (argv[2][i] - '0');
+				dungeon.monsters.max = (10*dungeon.monsters.max) + (argv[2][i] - '0');
 			}
+			printf("Selected NumMon as an agrument");
 		}
 	}
+	if(dungeon.monsters.max == 0)
+	{
+		dungeon.monsters.max = 30;
+	}
+	dungeon.monsters.max++;//I need 1 spot for the player.
+	printf("%d\n", dungeon.monsters.max);
+	int size = dungeon.monsters.max * sizeof(monster_t);
+	dungeon.monsters.list = malloc(size);
 	srand(seed);
 	dungeon_init();
 	if(m!=mode_load)
@@ -135,6 +145,7 @@ int main(int argc, char *argv[])
 		free(dungeon.map[x]);
 	}
 	free(dungeon.map);
+	free(dungeon.monsters.list);
 	if(f)
 	{
 		fclose(f);
@@ -186,7 +197,7 @@ void printMap()
 					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y].tile);
 					return;
 			}
-			if(dungeon.map[x][y].monsterIndex!=MAX_MONSTERS)
+			if(dungeon.map[x][y].monsterIndex!=dungeon.monsters.max)
 			{
 				toPrint = dungeon.monsters.list[dungeon.map[x][y].monsterIndex].displayChar;
 			}

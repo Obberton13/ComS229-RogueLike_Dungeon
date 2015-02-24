@@ -104,22 +104,17 @@ void move_monster(int monsterIndex, int *result)
 	}
 	newX = x + offsetX[j];
 	newY = y + offsetY[j];
-	if(dungeon.map[newX][newY].monsterIndex==MAX_MONSTERS)
+	if(dungeon.map[newX][newY].monsterIndex)
 	{
 		dungeon.monsters.list[monsterIndex].x = newX;
 		dungeon.monsters.list[monsterIndex].y = newY;
-		dungeon.map[x][y].monsterIndex = MAX_MONSTERS;
+		dungeon.map[x][y].monsterIndex = dungeon.monsters.max;
 		dungeon.map[newX][newY].monsterIndex = monsterIndex;
-		*result = 0;//this one correctly assigns to x
-	}
-	else if(dungeon.map[newX][newY].monsterIndex==0)
-	{
-		//end the game
-		*result = 1;//this one does not. Huh.
+		*result = 0;
 	}
 	else
 	{
-		//kill the monster this monster landed on
-		*result = 0;
+		//end the game
+		*result = 1;
 	}
 }

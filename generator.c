@@ -39,7 +39,7 @@ void dungeon_init()
 	}
 	//TODO initialize the monsters part of the dungeon
 	dungeon.monsters.count = 0;
-	for(x=0;x<MAX_MONSTERS;x++)
+	for(x=0;x<dungeon.monsters.max;x++)
 	{
 		dungeon.monsters.list[x].x = 0;
 		dungeon.monsters.list[x].y = 0;
@@ -58,7 +58,7 @@ void dungeon_init()
 		{
 			dungeon.map[x][y].tile = ter_rock;
 			dungeon.map[x][y].hardness = random() % 254+1;
-			dungeon.map[x][y].monsterIndex = MAX_MONSTERS;
+			dungeon.map[x][y].monsterIndex = dungeon.monsters.max;
 			dungeon.map[x][y].distToPlayer = INT_MAX;
 		}
 	}
@@ -351,7 +351,7 @@ static int inRoom(int x, int y, room_t room)
 static void spawnAllMonsters()
 {
 	int i;
-	for(i=0;i<MAX_MONSTERS;i++)
+	for(i=0;i<dungeon.monsters.max;i++)
 	{
 		int room = rand()%dungeon.rooms.count;
 		int x = (rand()%dungeon.rooms.list[room].w)+dungeon.rooms.list[room].x;
@@ -364,7 +364,7 @@ static void spawnAllMonsters()
 			char dispChar = rand()%('z'-'a')+'a';
 			char speed = rand()%11+5;
 			dungeon.monsters.list[dungeon.monsters.count].displayChar = dispChar;
-			dungeon.monsters.list[dungeon.monsters.count].flags = rand()%INT_MAX;
+			dungeon.monsters.list[dungeon.monsters.count].flags = rand();
 			dungeon.monsters.list[dungeon.monsters.count].speed = speed;
 			dungeon.monsters.list[dungeon.monsters.count].initiative = speed;
 		}
