@@ -34,8 +34,8 @@
 2015/02/19 14:55 - Added the command-line switch for the number of monsters, doesn't do anything yet
 2015/02/20 01:08 - Pathfinding with multiple monsters works. Player gets killed correctly. Still have to have monsters kill monsters.
 2015/02/20 01:31 - Implemented the initiative stuff, so monsters move according to their speed now.
-2015/02/23 02:15 - Pathfinding works again. Now includes win detection, not just loss detection. Dead monsters can no longer move.
-
+2015/02/24 02:15 - Pathfinding works again. Now includes win detection, not just loss detection. Dead monsters can no longer move.
+2015/12/24 21:26 - Pathfinding works, but now only the smart monsters move.
 
 
 

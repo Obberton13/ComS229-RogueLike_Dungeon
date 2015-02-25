@@ -75,7 +75,7 @@ typedef struct room_list {
 } room_list_t;
 
 typedef struct monster {
-	int x, y;
+	int x, y, px, py;
 	char displayChar;
 	unsigned int flags;
 	char speed, initiative;

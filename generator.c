@@ -359,6 +359,8 @@ static void spawnAllMonsters()
 		dungeon.map[x][y].monsterIndex = dungeon.monsters.count;
 		dungeon.monsters.list[dungeon.monsters.count].x = x;
 		dungeon.monsters.list[dungeon.monsters.count].y = y;
+		dungeon.monsters.list[dungeon.monsters.count].px = x;
+		dungeon.monsters.list[dungeon.monsters.count].py = y;
 		if(dungeon.monsters.count)
 		{
 			char dispChar = rand()%('z'-'a')+'a';
@@ -370,6 +372,7 @@ static void spawnAllMonsters()
 		}
 		else
 		{
+			dungeon.monsters.list[dungeon.monsters.count].flags = rand();
 			dungeon.monsters.list[dungeon.monsters.count].displayChar = '@';
 			dungeon.monsters.list[dungeon.monsters.count].speed = 10;
 			dungeon.monsters.list[dungeon.monsters.count].initiative = 10;

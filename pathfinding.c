@@ -91,27 +91,39 @@ void move_monster(int monsterIndex)
 {
 	int x = dungeon.monsters.list[monsterIndex].x;
 	int y = dungeon.monsters.list[monsterIndex].y;
-	int offsetX[8] = {0,0,1,1,1,-1,-1,-1};
-	int offsetY[8] = {1,-1,1,0,-1,1,0,-1};
-	int dist = INT_MAX;
-	int i, j=0, newX, newY;
-	for(i=0;i<8;i++)
+	int newX = x, newY = y;
+
+	
+
+	if(dungeon.monsters.list[monsterIndex].flags & MONSTER_SMART)
 	{
-		newX = x+offsetX[i];
-		newY = y+offsetY[i];
-		if(dungeon.map[newX][newY].distToPlayer<dist)
+		int i, j=0;
+		int offsetX[8] = {0,0,1,1,1,-1,-1,-1};
+		int offsetY[8] = {1,-1,1,0,-1,1,0,-1};
+		int dist = INT_MAX;
+		for(i=0;i<8;i++)
 		{
-			dist = dungeon.map[newX][newY].distToPlayer;
-			j=i;
+			newX = x+offsetX[i];
+			newY = y+offsetY[i];
+			if(dungeon.map[newX][newY].distToPlayer<dist)
+			{
+				dist = dungeon.map[newX][newY].distToPlayer;
+				j=i;
+			}
+		}
+		newX = x + offsetX[j];
+		newY = y + offsetY[j];
+	}
+	if(dungeon.map[newX][newY].monsterIndex!=monsterIndex)//if it isn't this monster
+	{
+		if(dungeon.map[newX][newY].monsterIndex!=dungeon.monsters.max)//and it is still a monster
+		{
+			dungeon.monsters.list[dungeon.map[newX][newY].monsterIndex].initiative = -1;
 		}
 	}
-	newX = x + offsetX[j];
-	newY = y + offsetY[j];
-	if(dungeon.map[newX][newY].monsterIndex!=dungeon.monsters.max)//If it is a monster
-	{
-		dungeon.monsters.list[dungeon.map[newX][newY].monsterIndex].initiative = -1;//set its initiative to -1 (kills it)
-	}
-	dungeon.monsters.list[monsterIndex].x = newX;//move the monster
+	
+	//move the monster
+	dungeon.monsters.list[monsterIndex].x = newX;
 	dungeon.monsters.list[monsterIndex].y = newY;
 	dungeon.map[x][y].monsterIndex = dungeon.monsters.max;
 	dungeon.map[newX][newY].monsterIndex = monsterIndex;
