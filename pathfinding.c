@@ -11,6 +11,7 @@ typedef struct path_cell {
 } path_cell_t;
 
 static int compare(void *v1, void *v2);
+static int player_visible(int monsterIndex);
 
 void find_paths()
 {
@@ -93,9 +94,11 @@ void move_monster(int monsterIndex)
 	int y = dungeon.monsters.list[monsterIndex].y;
 	int newX = x, newY = y;
 
-	
+	int v = player_visible(monsterIndex);//updates the last time the monster saw the player as well
 
-	if(dungeon.monsters.list[monsterIndex].flags & MONSTER_SMART)
+	if((dungeon.monsters.list[monsterIndex].flags & MONSTER_SMART
+	&&dungeon.monsters.list[monsterIndex].flags & MONSTER_TELEP)
+	||!v)
 	{
 		int i, j=0;
 		int offsetX[8] = {0,0,1,1,1,-1,-1,-1};
@@ -114,6 +117,13 @@ void move_monster(int monsterIndex)
 		newX = x + offsetX[j];
 		newY = y + offsetY[j];
 	}
+	else
+	{
+		if(x<dungeon.monsters.list[monsterIndex].px) newX = x+1;
+		if(x>dungeon.monsters.list[monsterIndex].px) newX = x-1;
+		if(y<dungeon.monsters.list[monsterIndex].py) newY = y+1;
+		if(y>dungeon.monsters.list[monsterIndex].py) newY = y-1;
+	}
 	if(dungeon.map[newX][newY].monsterIndex!=monsterIndex)//if it isn't this monster
 	{
 		if(dungeon.map[newX][newY].monsterIndex!=dungeon.monsters.max)//and it is still a monster
@@ -127,4 +137,25 @@ void move_monster(int monsterIndex)
 	dungeon.monsters.list[monsterIndex].y = newY;
 	dungeon.map[x][y].monsterIndex = dungeon.monsters.max;
 	dungeon.map[newX][newY].monsterIndex = monsterIndex;
+}
+
+static int player_visible(monsterIndex)
+{
+	int x = dungeon.monsters.list[monsterIndex].x;
+	int y = dungeon.monsters.list[monsterIndex].y;
+	int px = dungeon.monsters.list[0].x;
+	int py = dungeon.monsters.list[0].y;
+	while(x!=px&&y!=py)
+	{
+		if(x>px) x--;
+		else if(x<px) x++;
+		if(y>py) y--;
+		else if(y<py) y++;
+		
+		if(dungeon.map[x][y].tile==ter_room||
+		dungeon.map[x][y].tile==ter_corridor) return 1;
+	}
+	dungeon.monsters.list[monsterIndex].px = px;
+	dungeon.monsters.list[monsterIndex].py = py;
+	return 0;
 }

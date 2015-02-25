@@ -79,7 +79,6 @@ int main(int argc, char *argv[])
 		dungeon.monsters.max = 30;
 	}
 	dungeon.monsters.max++;//I need 1 spot for the player.
-	printf("%d\n", dungeon.monsters.max);
 	int size = dungeon.monsters.max * sizeof(monster_t);
 	dungeon.monsters.list = malloc(size);
 	srand(seed);
