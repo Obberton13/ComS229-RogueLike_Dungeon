@@ -18,14 +18,19 @@ typedef enum dmode {
 	mode_normal,
 } dmode_t;
 
+typedef enum pmode {
+	pmode_look,
+	pmode_control,
+	pmode_quit
+} pmode_t;
+
 dungeon_t dungeon;
 
 int open_file(FILE **f, char *mode);
 long int calculate_file_size(void);
-void printMap(void);
+void printMap(int scrX, int scrY);
 void save_dungeon(FILE *f);
 int load_dungeon(FILE *f);
-int user_input(void);
 int move_player(int x, int y);
 int is_open_space(int x, int y);
 
@@ -111,37 +116,193 @@ int main(int argc, char *argv[])
 	find_paths();
 	char result;
 	int i;
-	int quit = 0;
+	pmode_t mode = pmode_control;
+	int scrX = 0, scrY = 0;
+	scrX = dungeon.monsters.list[0].x - (SCREEN_W/2);
+	scrY = dungeon.monsters.list[0].y - (SCREEN_H/2);
+	if(scrX < 0) scrX = 0;
+	if(scrY < 0) scrY = 0;
+	if(scrX > (DUNGEON_X - SCREEN_W)) scrX = DUNGEON_X - SCREEN_W;
+	if(scrY > (DUNGEON_Y - SCREEN_H)) scrY = DUNGEON_Y - SCREEN_H;
+	printMap(scrX, scrY);
+	char in = 0;
 	do
 	{
 		int numDead = 0;
-		for(i=0;i<dungeon.monsters.count;i++)
+		switch (mode)
 		{
-			if(dungeon.monsters.list[i].initiative<0) 
-			{
-				numDead++;
-				continue;
-			}
-			
-			dungeon.monsters.list[i].initiative--;//decrease the initiative
-			if(!dungeon.monsters.list[i].initiative)//if initiative counter has reached 0
-			{
-				dungeon.monsters.list[i].initiative = dungeon.monsters.list[i].speed;//reset the initiative
-				if(i==0)//if the current monster is the player
+			case pmode_control:
+				for(i=0;i<dungeon.monsters.count;i++)
 				{
-					find_paths();//recalculate the distances to the player
-					printMap();//refresh the screen
-					quit = user_input();
+					if(dungeon.monsters.list[i].initiative<0) 
+					{
+						if(!i) result = 2;
+						numDead++;
+						continue;
+					}
+					
+					dungeon.monsters.list[i].initiative--;//decrease the initiative
+					if(!dungeon.monsters.list[i].initiative)//if initiative counter has reached 0
+					{
+						dungeon.monsters.list[i].initiative = dungeon.monsters.list[i].speed;//reset the initiative
+						if(i==0)//if the current monster is the player
+						{//move the player and the screen
+							find_paths();//recalculate the distances to the player
+							in = getch();
+							switch(in)
+							{
+								case '7':
+								case 'y'://up and left
+									if(move_player(-1, -1)) break;
+									scrX--;
+									scrY--;
+									break;
+								case '8':
+								case 'k'://up
+									if(move_player(0, -1)) break;
+									scrY--;
+
+									break;
+								case '9':
+								case 'u'://up and right
+									if(move_player(1, -1))break;
+									scrY--;
+									scrX++;
+									break;
+								case '6':
+								case 'l'://right 
+									if(move_player(1, 0))break;
+									scrX++;
+									break;
+								case '3':
+								case 'n'://down and right
+									if(move_player(1, 1))break;
+									scrX++;
+									scrY++;
+									break;
+								case '2':
+								case 'j'://down
+									if(move_player(0, 1))break;
+									scrY++;
+									break;
+								case '1':
+								case 'b'://down and left
+									if(move_player(-1, 1))break;
+									scrX--;
+									scrY++;
+									break;
+								case '4':
+								case 'h'://left
+									if(move_player(-1, 0))break;
+									scrX--;
+									break;
+								case '<'://down stairs
+									//TODO implement stairs
+									break;
+								case '>'://up stairs
+									//TODO implement stairs
+									break;
+								case 'L'://Look mode
+									mode = pmode_look;
+									scrX = dungeon.monsters.list[0].x - (SCREEN_W/2);
+									scrY = dungeon.monsters.list[0].y - (SCREEN_H/2);
+									if(scrX < 0) scrX = 0;
+									if(scrY < 0) scrY = 0;
+									if(scrX > (DUNGEON_X - SCREEN_W)) scrX = DUNGEON_X - SCREEN_W;
+									if(scrY > (DUNGEON_Y - SCREEN_H)) scrY = DUNGEON_Y - SCREEN_H;
+
+									break;
+								case 'S'://quit
+									mode = pmode_quit;
+								case ' '://rest for 1 turn.
+									break;
+								case 27://exit look mode
+									//27 is the 'escape' key
+									mvprintw(2, 2, "Escape was pressed!");
+								default:
+									mvprintw(1, 1, "Unbound key: %#o", in);
+									break;
+							}
+							scrX = dungeon.monsters.list[0].x - (SCREEN_W/2);
+							scrY = dungeon.monsters.list[0].y - (SCREEN_H/2);
+							if(scrX < 0) scrX = 0;
+							if(scrY < 0) scrY = 0;
+							if(scrX > (DUNGEON_X - SCREEN_W)) scrX = DUNGEON_X - SCREEN_W;
+							if(scrY > (DUNGEON_Y - SCREEN_H)) scrY = DUNGEON_Y - SCREEN_H;
+							printMap(scrX, scrY);//refresh the screen
+						}
+						else move_monster(i);//otherwise move the monster
+					}
+					if(dungeon.monsters.list[0].initiative<0)result = 2;
 				}
-				else move_monster(i);
-			}
-			if(dungeon.monsters.list[0].initiative<0)result = 2;
+				break;
+			case pmode_look:
+				in = getch();
+				switch(in)
+				{
+					case '7':
+					case 'y'://up and left
+						scrX--;
+						scrY--;
+						break;
+					case '8':
+					case 'k'://up
+						scrY--;
+						break;
+					case '9':
+					case 'u'://up and right
+						scrY--;
+						scrX++;
+						break;
+					case '6':
+					case 'l'://right 
+						scrX++;
+						break;
+					case '3':
+					case 'n'://down and right
+						scrX++;
+						scrY++;
+						break;
+					case '2':
+					case 'j'://down
+						scrY++;
+						break;
+					case '1':
+					case 'b'://down and left
+						scrX--;
+						scrY++;
+						break;
+					case '4':
+					case 'h'://left
+						scrX--;
+						break;
+					case 'S'://quit
+						endwin();
+						exit(1);
+					case ' '://rest for 1 turn.
+						break;
+					case 27://exit look mode
+						mode = pmode_control;
+					default:
+						mvprintw(1, 1, "Unbound key: %#o", in);
+				}
+
+				if(scrX < 0) scrX = 0;
+				if(scrY < 0) scrY = 0;
+				if(scrX > (DUNGEON_X - SCREEN_W)) scrX = DUNGEON_X - SCREEN_W;
+				if(scrY > (DUNGEON_Y - SCREEN_H)) scrY = DUNGEON_Y - SCREEN_H;
+
+				printMap(scrX, scrY);
+				break;
+			default: 
+				endwin();
+				exit(1);
 		}
 		if(numDead==dungeon.monsters.count-1)
 		{
 			result = 1;
 		}
-	}while(result==0||quit == 0);
+	}while(result==0||mode == 1);
 	if(result==2)printf("Oh, no, the player died!\n");
 	else if(result==1)printf("GG, you killed all of the things");
 
@@ -174,78 +335,9 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int user_input()
-{
-	char in = getch();
-	mvaddch(0, 0, in);//TODO this is only for debugging.
-	switch(in)
-	{
-		case '7':
-		case 'y'://up and left
-			move_player(-1, -1);
-			break;
-		case '8':
-		case 'k'://up
-			move_player(0, -1);
-			break;
-		case '9':
-		case 'u'://up and right
-			move_player(1, -1);
-			break;
-		case '6':
-		case 'l'://right 
-			move_player(1, 0);
-			break;
-		case '3':
-		case 'n'://down and right
-			move_player(1, 1);
-			break;
-		case '2':
-		case 'j'://down
-			move_player(0, 1);
-			break;
-		case '1':
-		case 'b'://down and left
-			move_player(-1, 1);
-			break;
-		case '4':
-		case 'h'://left
-			move_player(-1, 0);
-			break;
-		case '<'://down stairs
-			//TODO implement stairs
-			break;
-		case '>'://up stairs
-			//TODO implement stairs
-			break;
-		case 'L'://Look mode
-			//TODO look mode
-			break;
-		case 'S'://quit
-			endwin();
-			exit(1);
-		case ' '://rest for 1 turn.
-			break;
-		case 27://exit look mode
-			//27 is the 'escape' key
-			mvprintw(2, 2, "Escape was pressed!");
-		default:
-			mvprintw(1, 1, "Unbound key: %#o", in);
-			user_input();
-	}
-	return 0;
-}
-
-void printMap()
+void printMap(int scrX, int scrY)
 {
 	int x, y;
-	int scrX, scrY;
-	scrX = dungeon.monsters.list[0].x - (SCREEN_W/2);
-	scrY = dungeon.monsters.list[0].y - (SCREEN_H/2);
-	if(scrX < 0) scrX = 0;
-	if(scrY < 0) scrY = 0;
-	if(scrX > (DUNGEON_X - SCREEN_W)) scrX = DUNGEON_X - SCREEN_W;
-	if(scrY > (DUNGEON_Y - SCREEN_H)) scrY = DUNGEON_Y - SCREEN_H;
 
 	for(y=scrY;y<scrY+SCREEN_H;y++)
 	{
@@ -414,8 +506,9 @@ int move_player(int x, int y)
 		dungeon.monsters.list[0].y = y;
 		dungeon.map[px][py].monsterIndex = dungeon.monsters.max;
 		dungeon.map[x][y].monsterIndex = 0;
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 
 int is_open_space(int x, int y)

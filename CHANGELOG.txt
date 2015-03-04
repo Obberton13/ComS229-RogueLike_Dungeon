@@ -42,6 +42,7 @@
 
 2015/03/03 22:03 - Finished player controls
 2015/03/03 22:29 - Quit
+2015/03/03 23:51 - Look mode works for the most part
 
 
 
