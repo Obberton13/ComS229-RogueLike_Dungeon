@@ -1,5 +1,5 @@
 DungeonGame: main.o generator.o pathfinding.o bheap.o
-	gcc -Wall main.o generator.o pathfinding.o bheap.o -o DungeonGame
+	gcc -Wall main.o generator.o pathfinding.o bheap.o -o DungeonGame -lncurses
 
 main.o: dungeon.h main.c
 	gcc -Wall -Werror -ggdb main.c -c

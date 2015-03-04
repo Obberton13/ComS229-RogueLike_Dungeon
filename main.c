@@ -4,10 +4,13 @@
 #include <unistd.h>
 #include <time.h>
 #include <limits.h>
+#include <ncurses.h>
 
 #include "dungeon.h"
 #include "pathfinding.h"
 
+#define SCREEN_W 80
+#define SCREEN_H 24
 
 typedef enum dmode {
 	mode_save,
@@ -22,9 +25,14 @@ long int calculate_file_size(void);
 void printMap(void);
 void save_dungeon(FILE *f);
 int load_dungeon(FILE *f);
+void user_input(void);
+int move_player(int x, int y);
+int is_open_space(int x, int y);
+
 
 int main(int argc, char *argv[])
 {
+	initscr();
 	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
 	FILE *f = NULL;
@@ -99,9 +107,6 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-
-
-
 	//Here is the main game loop
 	find_paths();
 	char result;
@@ -120,14 +125,14 @@ int main(int argc, char *argv[])
 			dungeon.monsters.list[i].initiative--;//decrease the initiative
 			if(!dungeon.monsters.list[i].initiative)//if initiative counter has reached 0
 			{
-				move_monster(i);//move the monster
 				dungeon.monsters.list[i].initiative = dungeon.monsters.list[i].speed;//reset the initiative
 				if(i==0)//if the current monster is the player
 				{
 					find_paths();//recalculate the distances to the player
 					printMap();//refresh the screen
-					usleep(500000);//and wait to do it again next time.
+					user_input();
 				}
+				else move_monster(i);
 			}
 			if(dungeon.monsters.list[0].initiative<0)result = 2;
 		}
@@ -136,10 +141,6 @@ int main(int argc, char *argv[])
 			result = 1;
 		}
 	}while(result==0);
-
-
-
-
 	if(result==2)printf("Oh, no, the player died!\n");
 	else if(result==1)printf("GG, you killed all of the things");
 
@@ -168,25 +169,86 @@ int main(int argc, char *argv[])
 	{
 		fclose(f);
 	}
+	endwin();
 	return 0;
+}
+
+void user_input()
+{
+	char in = getch();
+	mvaddch(0, 0, in);//TODO this is only for debugging.
+	switch(in)
+	{
+		case '7':
+		case 'y'://up and left
+			move_player(-1, -1);
+			break;
+		case '8':
+		case 'k'://up
+			move_player(0, -1);
+			break;
+		case '9':
+		case 'u'://up and right
+			move_player(1, -1);
+			break;
+		case '6':
+		case 'l'://right 
+			move_player(1, 0);
+			break;
+		case '3':
+		case 'n'://down and right
+			move_player(1, 1);
+			break;
+		case '2':
+		case 'j'://down
+			move_player(0, 1);
+			break;
+		case '1':
+		case 'b'://down and left
+			move_player(-1, 1);
+			break;
+		case '4':
+		case 'h'://left
+			move_player(-1, 0);
+			break;
+		case '<'://down stairs
+			//TODO implement stairs
+			break;
+		case '>'://up stairs
+			//TODO implement stairs
+			break;
+		case 'L'://Look mode
+			//TODO look mode
+			break;
+		case 'S'://quit
+			//TODO quit the game
+			break;
+		case ' '://rest for 1 turn.
+			break;
+		case 27://exit look mode
+			//27 is the 'escape' key
+			mvprintw(2, 2, "Escape was pressed!");
+		default:
+			mvprintw(1, 1, "Unbound key: %#o", in);
+			user_input();
+	}
 }
 
 void printMap()
 {
 	int x, y;
-	for(y=0;y<DUNGEON_Y;y++)
+	int scrX, scrY;
+	scrX = dungeon.monsters.list[0].x - (SCREEN_W/2);
+	scrY = dungeon.monsters.list[0].y - (SCREEN_H/2);
+	if(scrX < 0) scrX = 0;
+	if(scrY < 0) scrY = 0;
+	if(scrX > (DUNGEON_X - SCREEN_W)) scrX = DUNGEON_X - SCREEN_W;
+	if(scrY > (DUNGEON_Y - SCREEN_H)) scrY = DUNGEON_Y - SCREEN_H;
+
+	for(y=scrY;y<scrY+SCREEN_H;y++)
 	{
-		for(x=0;x<DUNGEON_X;x++)
+		for(x=scrX;x<scrX+SCREEN_W;x++)
 		{
-			/*int dist = dungeon.map[x][y].distToPlayer;
-			if(dist>224)
-			{
-				printf("ff");
-			}
-			else
-			{
-				printf("%2x", dist);
-			}//*/
 			char toPrint;
 			switch(dungeon.map[x][y].tile)
 			{
@@ -205,24 +267,22 @@ void printMap()
 				case ter_debug:
 					toPrint = '*';
 					break;
-				case ter_debug2:
-					toPrint = 'd';
-					break;
-				case ter_debug3:
-					toPrint = '+';
+				case ter_stair_down:
+					toPrint = '>';
 					break;
 				default:
-					printf("\n\nInvalid dungeon tile ID: %d", dungeon.map[x][y].tile);
+					mvprintw(0, 0, "Invalid dungeon tile");
 					return;
 			}
 			if(dungeon.map[x][y].monsterIndex!=dungeon.monsters.max)
 			{
+				if(dungeon.monsters.list[dungeon.map[x][y].monsterIndex].initiative>0)
 				toPrint = dungeon.monsters.list[dungeon.map[x][y].monsterIndex].displayChar;
 			}
-			printf("%c", toPrint);//*/
+			mvaddch(y-scrY, x-scrX, toPrint);
 		}
-		printf("\n");
 	}
+	refresh();
 }
 
 int open_file(FILE **f, char *mode)
@@ -338,4 +398,32 @@ long int calculate_file_size()
 	size += dungeon.rooms.count*4;//values for all of the rooms
 	size += 2;//short containing number of rooms
 	return size;
+}
+
+int move_player(int x, int y)
+{
+	int px = dungeon.monsters.list[0].x;
+	int py = dungeon.monsters.list[0].y;
+	x+=px;
+	y+=py;
+	if(!is_open_space(x, y))
+	{
+		dungeon.monsters.list[0].x = x;
+		dungeon.monsters.list[0].y = y;
+		dungeon.map[px][py].monsterIndex = dungeon.monsters.max;
+		dungeon.map[x][y].monsterIndex = 0;
+	}
+	return 0;
+}
+
+int is_open_space(int x, int y)
+{
+	if(dungeon.map[x][y].tile==ter_room
+		||dungeon.map[x][y].tile==ter_corridor
+		||dungeon.map[x][y].tile==ter_stair_up
+		||dungeon.map[x][y].tile==ter_stair_down)
+	{
+		return 0;
+	}
+	return 1;
 }

@@ -124,9 +124,9 @@ void move_monster(int monsterIndex)
 		if(y<dungeon.monsters.list[monsterIndex].py) newY = y+1;
 		if(y>dungeon.monsters.list[monsterIndex].py) newY = y-1;
 	}
-	if(dungeon.map[newX][newY].monsterIndex!=monsterIndex)//if it isn't this monster
+	if(dungeon.map[newX][newY].monsterIndex!=monsterIndex)//if this is a monster
 	{
-		if(dungeon.map[newX][newY].monsterIndex!=dungeon.monsters.max)//and it is still a monster
+		if(dungeon.map[newX][newY].monsterIndex!=dungeon.monsters.max)//
 		{
 			dungeon.monsters.list[dungeon.map[newX][newY].monsterIndex].initiative = -1;
 		}

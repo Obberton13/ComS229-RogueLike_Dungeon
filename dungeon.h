@@ -49,9 +49,9 @@ typedef enum terrain_tile {
 	ter_immutable,
 	ter_room,
 	ter_corridor,
-	ter_debug,
-	ter_debug2,
-	ter_debug3
+	ter_stair_up,
+	ter_stair_down,
+	ter_debug
 } terrain_tile_t;
 
 typedef struct terrain_cell {

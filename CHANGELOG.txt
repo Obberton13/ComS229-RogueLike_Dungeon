@@ -38,7 +38,9 @@
 2015/12/24 21:26 - Pathfinding works, but now only the smart monsters move.
 2015/12/24 21:53 - EVERYTHING WORKS! As far as I know anyway. Dumb monsters *should* only move when they see the player. And the algorithm that I used for sight probably isn't the best, but it works
 
+-----Project 1.05-----
 
+2015/03/03 22:03 - Finished player controls
 
 
 
