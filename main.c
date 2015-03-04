@@ -25,7 +25,7 @@ long int calculate_file_size(void);
 void printMap(void);
 void save_dungeon(FILE *f);
 int load_dungeon(FILE *f);
-void user_input(void);
+int user_input(void);
 int move_player(int x, int y);
 int is_open_space(int x, int y);
 
@@ -111,6 +111,7 @@ int main(int argc, char *argv[])
 	find_paths();
 	char result;
 	int i;
+	int quit = 0;
 	do
 	{
 		int numDead = 0;
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
 				{
 					find_paths();//recalculate the distances to the player
 					printMap();//refresh the screen
-					user_input();
+					quit = user_input();
 				}
 				else move_monster(i);
 			}
@@ -140,7 +141,7 @@ int main(int argc, char *argv[])
 		{
 			result = 1;
 		}
-	}while(result==0);
+	}while(result==0||quit == 0);
 	if(result==2)printf("Oh, no, the player died!\n");
 	else if(result==1)printf("GG, you killed all of the things");
 
@@ -173,7 +174,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void user_input()
+int user_input()
 {
 	char in = getch();
 	mvaddch(0, 0, in);//TODO this is only for debugging.
@@ -221,8 +222,8 @@ void user_input()
 			//TODO look mode
 			break;
 		case 'S'://quit
-			//TODO quit the game
-			break;
+			endwin();
+			exit(1);
 		case ' '://rest for 1 turn.
 			break;
 		case 27://exit look mode
@@ -232,6 +233,7 @@ void user_input()
 			mvprintw(1, 1, "Unbound key: %#o", in);
 			user_input();
 	}
+	return 0;
 }
 
 void printMap()
