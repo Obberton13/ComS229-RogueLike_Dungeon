@@ -10,6 +10,7 @@ static void generateAllRooms(void);
 static int generateRoom(void);
 static int canPlaceRoom(room_t room);
 static void connectAllRooms(void);
+static void generateStairs(void);
 static int findClosestRoom(int i, int connected[30], int isConnected);
 static void connectRooms(room_t room1, room_t room2);
 static int inRoom(int x, int y, room_t room);
@@ -20,6 +21,7 @@ void generateDungeon()
 {
 	generateAllRooms();
 	connectAllRooms();
+	generateStairs();
 	spawnAllMonsters();
 	return;
 }
@@ -78,6 +80,17 @@ void dungeon_init()
 	}
 }
 
+void dungeon_free()
+{
+	int x;
+	for(x=0;x<DUNGEON_X;x++)
+	{
+		free(dungeon.map[x]);
+	}
+	free(dungeon.map);
+	free(dungeon.monsters.list);
+}
+
 static void generateAllRooms()
 {
 	int failures = 0;
@@ -93,8 +106,7 @@ static void generateAllRooms()
 		{
 			failures++;
 		}
-	}//*/
-	//while(generateRoom());
+	}
 }
 
 static int generateRoom()
@@ -175,6 +187,20 @@ static void connectAllRooms()
 		connectRooms(dungeon.rooms.list[closest], dungeon.rooms.list[closestConnected]);
 		connected[closest]=1;
 	}
+}
+
+static void generateStairs()
+{
+	int roomId = random() % dungeon.rooms.count;
+	room_t rm = dungeon.rooms.list[roomId];
+	int x = rm.x + random() % rm.w;
+	int y = rm.y + random() % rm.h;
+	dungeon.map[x][y].tile = ter_stair_down;
+	roomId = random() % dungeon.rooms.count;
+	rm = dungeon.rooms.list[roomId];
+	x = rm.x + random() % rm.w;
+	y = rm.y + random() % rm.h;
+	dungeon.map[x][y].tile = ter_stair_up;
 }
 
 static int findClosestRoom(int i, int connected[MAX_ROOMS], int isConnected)
@@ -380,4 +406,3 @@ static void spawnAllMonsters()
 		dungeon.monsters.count++;
 	}
 }
-

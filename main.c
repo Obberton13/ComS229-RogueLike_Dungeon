@@ -197,10 +197,32 @@ int main(int argc, char *argv[])
 									scrX--;
 									break;
 								case '<'://down stairs
-									//TODO implement stairs
+									if(dungeon.map[dungeon.monsters.list[0].x][dungeon.monsters.list[0].y].tile == ter_stair_up)
+									{
+										int x;
+										for(x=0;x<DUNGEON_X;x++)
+										{
+											free(dungeon.map[x]);
+										}
+										free(dungeon.map);
+										free(dungeon.monsters.list);
+										dungeon_init();
+										generateDungeon();
+									}
 									break;
 								case '>'://up stairs
-									//TODO implement stairs
+									if(dungeon.map[dungeon.monsters.list[0].x][dungeon.monsters.list[0].y].tile == ter_stair_down)
+									{
+										int x;
+										for(x=0;x<DUNGEON_X;x++)
+										{
+											free(dungeon.map[x]);
+										}
+										free(dungeon.map);
+										free(dungeon.monsters.list);
+										dungeon_init();
+										generateDungeon();
+									}
 									break;
 								case 'L'://Look mode
 									mode = pmode_look;
@@ -308,10 +330,8 @@ int main(int argc, char *argv[])
 
 	if(m==mode_save)
 	{
-		//TODO Save the dungeon to ~/.rlg229/dungeon
 		if(!open_file(&f, "w"))
 		{
-			//TODO save the dungeon to this file
 			save_dungeon(f);
 		}
 		else

@@ -97,5 +97,6 @@ extern dungeon_t dungeon;
 
 void generateDungeon(void);
 void dungeon_init(void);
+void dungeon_free(void);
 
 #endif
