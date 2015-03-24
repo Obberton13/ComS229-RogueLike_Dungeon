@@ -75,9 +75,9 @@ typedef struct room_list {
 } room_list_t;
 
 typedef struct monster {
-	int x, y, px, py;
+	unsigned char x, y, px, py;
 	char displayChar;
-	unsigned int flags;
+	unsigned int flags, sequence_num;
 	char speed, initiative;
 } monster_t;
 
@@ -91,6 +91,8 @@ typedef struct dungeon {
 	terrain_cell_t **map;
 	room_list_t rooms;
 	monster_list_t monsters;
+	unsigned int game_turn;
+	unsigned int monsters_generated;
 } dungeon_t;
 
 extern dungeon_t dungeon;

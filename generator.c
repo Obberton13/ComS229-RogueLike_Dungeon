@@ -403,6 +403,8 @@ static void spawnAllMonsters()
 			dungeon.monsters.list[dungeon.monsters.count].speed = 10;
 			dungeon.monsters.list[dungeon.monsters.count].initiative = 10;
 		}
+		dungeon.monsters.list[dungeon.monsters.count].sequence_num = dungeon.monsters_generated;
 		dungeon.monsters.count++;
+		dungeon.monsters_generated++;
 	}
 }

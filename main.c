@@ -34,7 +34,6 @@ int load_dungeon(FILE *f);
 int move_player(int x, int y);
 int is_open_space(int x, int y);
 
-
 int main(int argc, char *argv[])
 {
 	initscr();
@@ -96,6 +95,8 @@ int main(int argc, char *argv[])
 	dungeon.monsters.list = malloc(size);
 	srand(seed);
 	dungeon_init();
+	dungeon.monsters_generated = 0;
+	dungeon.game_turn = 0;
 	if(m!=mode_load)
 	{
 		generateDungeon();
@@ -426,21 +427,80 @@ int open_file(FILE **f, char *mode)
 void save_dungeon(FILE *f)
 {
 	//fwrite(toPrint, size, number, file)
-	fwrite("RLG229", 1, 6, f);
-	long int version = 0;
-	fwrite(&version, sizeof(version), 1, f);
-	long int filesize = calculate_file_size();
-	fwrite(&filesize, sizeof(version), 1, f);
+	fwrite("RLG229", 1, 6, f);//0-5
+	unsigned long int version = 1;
+	fwrite(&version, sizeof(version), 1, f);//6-9
+	unsigned long int filesize = calculate_file_size();
+	fwrite(&filesize, sizeof(version), 1, f);//10-13
+	fwrite(&filesize, sizeof(version), 1, f);//14-17
 	int x, y;
-	for(y=0;y<DUNGEON_Y;y++)
+	for(y=0;y<DUNGEON_Y;y++)//
 	{
 		for(x=0;x<DUNGEON_X;x++)
 		{
-			unsigned char values[4];
-			values[0] = (dungeon.map[x][y].tile==ter_room||dungeon.map[x][y].tile==ter_corridor);
-			values[1] = (dungeon.map[x][y].tile==ter_room);
+			unsigned char values[5];
+			values[0] = (dungeon.map[x][y].tile==ter_room
+				||dungeon.map[x][y].tile==ter_corridor);
+			values[1] = (dungeon.map[x][y].tile==ter_room
+				||dungeon.map[x][y].tile==ter_stair_up
+				||dungeon.map[x][y].tile==ter_stair_down);
 			values[2] = (dungeon.map[x][y].tile==ter_corridor);
 			values[3] = dungeon.map[x][y].hardness;
+			values[4] = 0;
+			switch(dungeon.map[x][y].tile)
+			{
+				case ter_room:
+					values[0] = 1;
+					values[1] = 1;
+					values[2] = 0;
+					values[3] = 0;
+					values[4] = 0;
+					break;
+				case ter_corridor:
+					values[0] = 1;
+					values[1] = 0;
+					values[2] = 1;
+					values[3] = 0;
+					values[4] = 0;
+					break;
+				case ter_rock:
+					values[0] = 0;
+					values[1] = 0;
+					values[2] = 0;
+					values[3] = dungeon.map[x][y].hardness;
+					values[4] = 0;
+					break;
+				case ter_immutable:
+					values[0] = 1;
+					values[1] = 0;
+					values[2] = 0;
+					values[3] = 255;
+					values[4] = 0;
+					break;
+				case ter_stair_up:
+					values[0] = 1;
+					values[1] = 0;
+					values[2] = 0;
+					values[3] = 0;
+					values[4] = 2;
+					break;
+				case ter_stair_down:
+					values[0] = 1;
+					values[1] = 0;
+					values[2] = 0;
+					values[3] = 0;
+					values[4] = 1;
+					break;
+				case ter_debug:
+					values[0] = 1;
+					values[1] = 0;
+					values[2] = 0;
+					values[3] = 0;
+					values[4] = 0;
+					break;
+				default:
+					break;
+			}
 			fwrite(values, sizeof(values), 1, f);
 		}
 	}
@@ -454,6 +514,36 @@ void save_dungeon(FILE *f)
 		values[3] = dungeon.rooms.list[x].h;
 		fwrite(values, sizeof(values), 1, f);
 	}
+	unsigned char pcloc[2] = {dungeon.monsters.list[0].x, dungeon.monsters.list[0].y};
+	fwrite(pcloc, sizeof(pcloc), 1, f);
+	unsigned long gtmg[2] = {dungeon.game_turn, dungeon.monsters_generated};
+	fwrite(gtmg, sizeof(gtmg), 1, f);
+	fwrite(&dungeon.monsters.count-1, 2, 1, f);
+	//TODO list of NPCs
+	for(x = 1; x < dungeon.monsters.count; x++)
+	{
+		char values[8];
+		values[0] = dungeon.monsters.list[x].displayChar;
+		values[1] = dungeon.monsters.list[x].x;
+		values[2] = dungeon.monsters.list[x].y;
+		values[3] = dungeon.monsters.list[x].speed;
+		values[4] = (dungeon.monsters.list[x].flags&MONSTER_SMART)>0;
+		values[5] = (dungeon.monsters.list[x].flags&MONSTER_TELEP)>0;
+		values[6] = dungeon.monsters.list[x].px;
+		values[7] = dungeon.monsters.list[x].py;
+		fwrite(values, sizeof(values), 1, f);
+		unsigned long longvalues[2];
+		longvalues[0] = dungeon.monsters.list[x].sequence_num;
+		longvalues[1] = dungeon.monsters.list[x].initiative + dungeon.game_turn;
+		fwrite(longvalues, sizeof(longvalues), 1, f);
+		int i[20];
+		int j;
+		for(j = 0; j < 20; j++)
+		{
+			i[j] = 0;
+		}
+		fwrite(i, 1, 20, f);
+	}
 }
 
 int load_dungeon(FILE *f)
@@ -464,8 +554,9 @@ int load_dungeon(FILE *f)
 	long int version;
 	fread(&version, sizeof(version), 1, f);
 	long int filesize;
-	fread(&filesize, sizeof(filesize), 1, f);
 	int x, y;
+	fread(&filesize, sizeof(filesize), 1, f);
+	fread(&filesize, sizeof(filesize), 1, f);
 	for(y=0;y<DUNGEON_Y;y++)
 	{
 		for(x=0;x<DUNGEON_X;x++)
