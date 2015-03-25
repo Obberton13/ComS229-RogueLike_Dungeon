@@ -41,6 +41,7 @@ void dungeon_init()
 	}
 	//TODO initialize the monsters part of the dungeon
 	dungeon.monsters.count = 0;
+	dungeon.monsters.list = malloc(sizeof(monster_t)*dungeon.monsters.max);
 	for(x=0;x<dungeon.monsters.max;x++)
 	{
 		dungeon.monsters.list[x].x = 0;

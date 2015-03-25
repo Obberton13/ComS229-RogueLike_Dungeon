@@ -47,6 +47,16 @@
 -----Project 1.06-----
 
 2015/03/24 11:20 - Saving function now compiles
+2015/03/24 11:49 - Loading function now compiles
+2015/03/24 12:59 - Fixed crash on using uninitialized value, now I need to fix the calculatefilesize function.
+2015/03/24 21:23 - calculatefilesize function is done, but uninitialized value problem is back.
+
+
+
+
+
+
+
 
 
 

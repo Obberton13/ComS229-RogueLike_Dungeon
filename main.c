@@ -12,12 +12,6 @@
 #define SCREEN_W 80
 #define SCREEN_H 24
 
-typedef enum dmode {
-	mode_save,
-	mode_load,
-	mode_normal,
-} dmode_t;
-
 typedef enum pmode {
 	pmode_look,
 	pmode_control,
@@ -27,7 +21,7 @@ typedef enum pmode {
 dungeon_t dungeon;
 
 int open_file(FILE **f, char *mode);
-long int calculate_file_size(void);
+int calculate_file_size(void);
 void printMap(int scrX, int scrY);
 void save_dungeon(FILE *f);
 int load_dungeon(FILE *f);
@@ -37,7 +31,6 @@ int is_open_space(int x, int y);
 int main(int argc, char *argv[])
 {
 	initscr();
-	dmode_t m = mode_normal;
 	unsigned int seed = time(NULL);
 	FILE *f = NULL;
 	dungeon.monsters.max = 0;
@@ -62,14 +55,6 @@ int main(int argc, char *argv[])
 				seed = (seed*10)+(argv[2][i] - '0');
 			}
 			printf("Seed: %d\n", seed);
-		}
-		else if(strcmp(argv[1], "--save")==0)
-		{
-			m = mode_save;
-		}
-		else if(strcmp(argv[1], "--load")==0)
-		{
-			m = mode_load;
 		}
 		else if(strcmp(argv[1], "--nummon")==0)
 		{
@@ -97,25 +82,14 @@ int main(int argc, char *argv[])
 	dungeon_init();
 	dungeon.monsters_generated = 0;
 	dungeon.game_turn = 0;
-	if(m!=mode_load)
+	generateDungeon();
+	if(!open_file(&f, "r")&&!load_dungeon(f))
 	{
-		generateDungeon();
+		perror("Successfully loaded the dungeon");
+		fclose(f);
 	}
-	else
-	{
-		if(!open_file(&f, "r"))
-		{
-			load_dungeon(f);
-		}
-		else
-		{
-			fprintf(stderr, "Error loading the file\n");
-			return 1;
-		}
-	}
-	//Here is the main game loop
 	find_paths();
-	char result;
+	char result = 0;
 	int i;
 	pmode_t mode = pmode_control;
 	int scrX = 0, scrY = 0;
@@ -129,15 +103,15 @@ int main(int argc, char *argv[])
 	char in = 0;
 	do
 	{
-		int numDead = 0;
+	 	int numDead = 0;
 		switch (mode)
 		{
-			case pmode_control:
-				for(i=0;i<dungeon.monsters.count;i++)
+		 	case pmode_control:
+		 		for(i=0;i<dungeon.monsters.count;i++)
 				{
-					if(dungeon.monsters.list[i].initiative<0) 
+		 			if(dungeon.monsters.list[i].initiative<0) 
 					{
-						if(!i) result = 2;
+		 				if(!i) result = 2;
 						numDead++;
 						continue;
 					}
@@ -145,14 +119,14 @@ int main(int argc, char *argv[])
 					dungeon.monsters.list[i].initiative--;//decrease the initiative
 					if(!dungeon.monsters.list[i].initiative)//if initiative counter has reached 0
 					{
-						dungeon.monsters.list[i].initiative = dungeon.monsters.list[i].speed;//reset the initiative
+	 					dungeon.monsters.list[i].initiative = dungeon.monsters.list[i].speed;//reset the initiative
 						if(i==0)//if the current monster is the player
 						{//move the player and the screen
-							find_paths();//recalculate the distances to the player
+	 						find_paths();//recalculate the distances to the player
 							in = getch();
 							switch(in)
 							{
-								case '7':
+			 					case '7':
 								case 'y'://up and left
 									if(move_player(-1, -1)) break;
 									scrX--;
@@ -236,7 +210,11 @@ int main(int argc, char *argv[])
 
 									break;
 								case 'S'://quit
-									mode = pmode_quit;
+						 			endwin();
+									open_file(&f, "w");
+									save_dungeon(f);
+									fclose(f);
+									exit(0);
 								case ' '://rest for 1 turn.
 									break;
 								case 27://exit look mode
@@ -300,6 +278,9 @@ int main(int argc, char *argv[])
 						scrX--;
 						break;
 					case 'S'://quit
+						open_file(&f, "w");
+						save_dungeon(f);
+						fclose(f);
 						endwin();
 						exit(1);
 					case ' '://rest for 1 turn.
@@ -325,22 +306,9 @@ int main(int argc, char *argv[])
 		{
 			result = 1;
 		}
-	}while(result==0||mode == 1);
+	}while(result==0);
 	if(result==2)printf("Oh, no, the player died!\n");
-	else if(result==1)printf("GG, you killed all of the things");
 
-	if(m==mode_save)
-	{
-		if(!open_file(&f, "w"))
-		{
-			save_dungeon(f);
-		}
-		else
-		{
-			fprintf(stderr, "Error loading the file\n");
-			return 1;
-		}
-	}
 	int x;
 	for(x=0;x<DUNGEON_X;x++)
 	{
@@ -410,7 +378,8 @@ int open_file(FILE **f, char *mode)
 	if(!path)
 	{
 		fprintf(stderr, "malloc failed!\n");
-		return 1;
+		endwin();
+		exit(1);
 	}
 	sprintf(path, "%s/%s", home, file);
 	*f = fopen(path, mode);
@@ -428,25 +397,17 @@ void save_dungeon(FILE *f)
 {
 	//fwrite(toPrint, size, number, file)
 	fwrite("RLG229", 1, 6, f);//0-5
-	unsigned long int version = 1;
-	fwrite(&version, sizeof(version), 1, f);//6-9
-	unsigned long int filesize = calculate_file_size();
-	fwrite(&filesize, sizeof(version), 1, f);//10-13
-	fwrite(&filesize, sizeof(version), 1, f);//14-17
+	unsigned int version = 1;
+	fwrite(&version, 4, 1, f);//6-9
+	unsigned int filesize = calculate_file_size();
+	fwrite(&filesize, 4, 1, f);//10-13
+	fwrite(&filesize, 4, 1, f);//14-17
 	int x, y;
 	for(y=0;y<DUNGEON_Y;y++)//
 	{
 		for(x=0;x<DUNGEON_X;x++)
 		{
 			unsigned char values[5];
-			values[0] = (dungeon.map[x][y].tile==ter_room
-				||dungeon.map[x][y].tile==ter_corridor);
-			values[1] = (dungeon.map[x][y].tile==ter_room
-				||dungeon.map[x][y].tile==ter_stair_up
-				||dungeon.map[x][y].tile==ter_stair_down);
-			values[2] = (dungeon.map[x][y].tile==ter_corridor);
-			values[3] = dungeon.map[x][y].hardness;
-			values[4] = 0;
 			switch(dungeon.map[x][y].tile)
 			{
 				case ter_room:
@@ -501,10 +462,10 @@ void save_dungeon(FILE *f)
 				default:
 					break;
 			}
-			fwrite(values, sizeof(values), 1, f);
+			fwrite(values, 1, 5, f);
 		}
 	}
-	fwrite(&dungeon.rooms.count, sizeof(dungeon.rooms.count), 1, f);
+	fwrite(&dungeon.rooms.count, 2, 1, f);
 	for(x=0;x<dungeon.rooms.count;x++)
 	{
 		unsigned char values[4];
@@ -512,13 +473,14 @@ void save_dungeon(FILE *f)
 		values[1] = dungeon.rooms.list[x].y;
 		values[2] = dungeon.rooms.list[x].w;
 		values[3] = dungeon.rooms.list[x].h;
-		fwrite(values, sizeof(values), 1, f);
+		fwrite(values, 1, 4, f);
 	}
 	unsigned char pcloc[2] = {dungeon.monsters.list[0].x, dungeon.monsters.list[0].y};
-	fwrite(pcloc, sizeof(pcloc), 1, f);
-	unsigned long gtmg[2] = {dungeon.game_turn, dungeon.monsters_generated};
-	fwrite(gtmg, sizeof(gtmg), 1, f);
-	fwrite(&dungeon.monsters.count-1, 2, 1, f);
+	fwrite(pcloc, 1, 2, f);
+	unsigned int gtmg[2] = {dungeon.game_turn, dungeon.monsters_generated};
+	fwrite(gtmg, 4, 2, f);
+	unsigned short count = dungeon.monsters.count-1;
+	fwrite(&count, 2, 1, f);
 	//TODO list of NPCs
 	for(x = 1; x < dungeon.monsters.count; x++)
 	{
@@ -531,11 +493,11 @@ void save_dungeon(FILE *f)
 		values[5] = (dungeon.monsters.list[x].flags&MONSTER_TELEP)>0;
 		values[6] = dungeon.monsters.list[x].px;
 		values[7] = dungeon.monsters.list[x].py;
-		fwrite(values, sizeof(values), 1, f);
-		unsigned long longvalues[2];
-		longvalues[0] = dungeon.monsters.list[x].sequence_num;
-		longvalues[1] = dungeon.monsters.list[x].initiative + dungeon.game_turn;
-		fwrite(longvalues, sizeof(longvalues), 1, f);
+		fwrite(values, 1, 8, f);
+		unsigned int intvalues[2];
+		intvalues[0] = dungeon.monsters.list[x].sequence_num;
+		intvalues[1] = dungeon.monsters.list[x].initiative + dungeon.game_turn;
+		fwrite(intvalues, 4, 2, f);
 		int i[20];
 		int j;
 		for(j = 0; j < 20; j++)
@@ -548,21 +510,39 @@ void save_dungeon(FILE *f)
 
 int load_dungeon(FILE *f)
 {
+	if(f==NULL) 
+	{
+		perror("load dungeon got passed a null pointer");
+		return 1;
+	}
 	char *FileType = malloc(7);
-	fread(FileType, 1, 6, f);
+	fread(FileType, 1, 6, f);//0-5
+	FileType[6] = 0;
+	//if(!strcmp(FileType, "RLG229"))
+	//{
+	//	perror("Loading dungeon recieved incorrect file type");
+	//	return 1;
+	//}
 	free(FileType);
-	long int version;
-	fread(&version, sizeof(version), 1, f);
-	long int filesize;
+	unsigned int version;
+	fread(&version, 4, 1, f);//6-9
+	//if(version != 1)
+	//{
+	//	perror("Dungeon file is out of date");
+	//	return 1;
+	//}
+	unsigned int filesize;
 	int x, y;
-	fread(&filesize, sizeof(filesize), 1, f);
-	fread(&filesize, sizeof(filesize), 1, f);
+	fread(&filesize, 4, 1, f);//10-13
+	fread(&filesize, 4, 1, f);//14-17
+	dungeon_init();
+	int i = 0;
 	for(y=0;y<DUNGEON_Y;y++)
 	{
 		for(x=0;x<DUNGEON_X;x++)
 		{
-			unsigned char values[4];
-			fread(values, sizeof(values), 1, f);
+			unsigned char values[5];
+			fread(values, 1, 5, f);
 			if(dungeon.map[x][y].tile!=ter_immutable)
 			{
 				if(values[1])
@@ -574,10 +554,26 @@ int load_dungeon(FILE *f)
 					dungeon.map[x][y].tile = ter_corridor;
 				}
 				dungeon.map[x][y].hardness = values[3];
+				switch(values[4])
+				{
+					case 0:
+						break;
+					case 1:
+						dungeon.map[x][y].tile = ter_stair_down;
+						break;
+					case 2:
+						dungeon.map[x][y].tile = ter_stair_up;
+						break;
+					default:
+						perror("invalid stair value");
+						exit(1);
+				}
 			}
+			i++;
+			filesize-=5;
 		}
 	}
-	fread(&dungeon.rooms.count, sizeof(dungeon.rooms.count), 1, f);
+	fread(&dungeon.rooms.count, 2, 1, f);
 	filesize-=2;
 	for(x=0;x<dungeon.rooms.count;x++)
 	{
@@ -587,21 +583,80 @@ int load_dungeon(FILE *f)
 			return 1;
 		}
 		unsigned char values[4];
-		fread(values, sizeof(values), 1, f);
+		fread(values, 1, 4, f);
 		dungeon.rooms.list[x].x = values[0];
 		dungeon.rooms.list[x].y = values[1];
 		dungeon.rooms.list[x].w = values[2];
 		dungeon.rooms.list[x].h = values[3];
 		filesize-=4;
 	}
+	unsigned char px, py;
+	fread(&px, 1, 1, f);
+	filesize-=1;
+	fread(&py, 1, 1, f);
+	filesize-=1;
+	fread(&dungeon.game_turn, 4, 1, f);
+	filesize-=4;
+	fread(&dungeon.monsters_generated, 4, 1, f);
+	filesize-=4;
+	fread(&dungeon.monsters.count, 2, 1, f);
+	filesize-=2;
+	dungeon.monsters.list = realloc(dungeon.monsters.list, sizeof(monster_t) * ++dungeon.monsters.count);
+	dungeon.monsters.max = dungeon.monsters.count;
+	if(!dungeon.monsters.list)
+	{
+		perror("Malloc failed to allocate storage for monsters on load");
+		endwin();
+		exit(1);
+	}
+	for(x=1;x<dungeon.monsters.count; x++)
+	{
+		if(filesize<0)
+		{
+			perror("ran out of filesize without running out of monsters in the list\n");
+			return 1;
+		}
+		dungeon.monsters.list[x].flags = 0;
+		unsigned char values[8];
+		fread(values, 1, 8, f);
+		filesize-=8;
+		dungeon.monsters.list[x].displayChar = values[0];
+		dungeon.monsters.list[x].x = values[1];
+		dungeon.monsters.list[x].y = values[2];
+		dungeon.map[dungeon.monsters.list[x].x][dungeon.monsters.list[x].y].monsterIndex=x;
+		dungeon.monsters.list[x].speed = values[3];
+		if(values[4]) dungeon.monsters.list[x].flags+=MONSTER_SMART;
+		if(values[5]) dungeon.monsters.list[x].flags+=MONSTER_TELEP;
+		dungeon.monsters.list[x].px = (values[6]==255)? dungeon.monsters.list[x].x : values[6];
+		dungeon.monsters.list[x].py = (values[7]==255)? dungeon.monsters.list[x].y : values[7];
+		unsigned int intvalues[2];
+		fread(intvalues, 4, 2, f);
+		filesize-=8;
+		dungeon.monsters.list[x].sequence_num = intvalues[0];
+		dungeon.monsters.list[x].initiative = intvalues[1]-dungeon.game_turn;
+		
+		unsigned char derp[20];
+		fread(derp, sizeof(derp), 1, f);
+		filesize-=20;
+	}
+	if(filesize!=0)
+	{
+		fprintf(stderr, "%d bytes left over\n", filesize);
+		return 1;
+	}
 	return 0;
 }
 
-long int calculate_file_size()
+int calculate_file_size()
 {
-	long int size = 160*96*4;//all of the dungeon tiles
+	int size = 160*96*5;//all of the dungeon tiles
 	size += dungeon.rooms.count*4;//values for all of the rooms
 	size += 2;//short containing number of rooms
+	size += 2;//x and y for the PC
+	size += 8;//game turn and monster sequence number
+	size += 2;//number of monsters
+	size += 36 * dungeon.monsters.count-1;//36 bytes for each monster
+	//if there was a user block, it would go here.
 	return size;
 }
 
