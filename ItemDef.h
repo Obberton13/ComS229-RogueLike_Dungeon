@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include "Dice.h"
+#include <curses.h>
+
 #define ITEM_WEAPON		0x00000001
 #define ITEM_OFFHAND	0x00000002
 #define ITEM_RANGED		0x00000004
@@ -35,18 +37,6 @@
 #define ITEM_BIT29		0x20000000
 #define ITEM_BIT30		0x40000000
 #define ITEM_BIT31		0x80000000
-
-//TODO temporary color definitions for Windows b/c no ncurses
-#define COLOR_BLACK 1
-#define COLOR_WHITE 2
-#define COLOR_BLUE 3
-#define COLOR_CYAN 4
-#define COLOR_YELLOW 5
-#define COLOR_MAGENTA 6
-#define COLOR_RED 7
-#define COLOR_GREEN 8
-
-
 
 class ItemDef
 {

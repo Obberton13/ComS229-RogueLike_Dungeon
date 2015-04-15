@@ -1,13 +1,17 @@
 #include <fstream>
 #include <sstream>
-#include <regex>
+#include <boost/regex.hpp>
 #include "ItemDef.h"
 
 std::vector<ItemDef*> ItemDef::definitions;
 
 int ItemDef::parseObjects()
 {
-	std::string path("object_desc.txt");
+	std::string path;
+	std::string home;
+	std::string file= ".rlg229/object_desc.txt";
+	home = getenv("HOME");
+	path = home + "/" + file;
 	std::ifstream f(path);
 	if (!f)
 	{
@@ -19,6 +23,7 @@ int ItemDef::parseObjects()
 	if (line != "RLG229 OBJECT DESCRIPTION 1")
 	{
 		std::cerr << "File has incorrect metadata" << std::endl;
+		std::cerr << line << std::endl;
 		return 1;
 	}
 	ItemDef *obj;
@@ -39,17 +44,16 @@ int ItemDef::parseObjects()
 				continue;
 			}
 			obj = new ItemDef();
-			//obj->setSymbol('/');
-			//std::cout << "New obj made" << std::endl;
+			std::cout << "New obj made" << std::endl;
 		}
 		else if (word == "NAME")
 		{
-			std::tr1::regex regex("NAME (.*)");
-			std::tr1::cmatch matches;
-			std::tr1::regex_match(line.c_str(), matches, regex);
+			boost::regex regex("NAME (.*)");
+			boost::cmatch matches;
+			boost::regex_match(line.c_str(), matches, regex);
 			std::string str(matches[1]);
 			obj->setName(str);
-			//std::cout << "Set obj's name" << std::endl;
+			std::cout << "Set obj's name" << std::endl;
 		}
 		else if (word == "DESC")
 		{
@@ -62,14 +66,14 @@ int ItemDef::parseObjects()
 				std::getline(f, line);
 			}
 			obj->setDescription(description);
-			//std::cout << "Set obj description" << std::endl;
+			std::cout << "Set obj description" << std::endl;
 		}
 		else if (word == "SYMB")
 		{
 			char c;
 			iss >> c;
 			obj->setSymbol(c);
-			//std::cout << "Set obj symbol" << std::endl;
+			std::cout << "Set obj symbol" << std::endl;
 		}
 		else if (word == "COLOR")
 		{
@@ -83,76 +87,77 @@ int ItemDef::parseObjects()
 			iss >> word;
 			Dice d(word);
 			obj->setSpeed(d);
-			//std::cout << "Set obj speed" << std::endl;
+			std::cout << "Set obj speed" << std::endl;
 		}
 		else if (word == "DAM")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setDamage(d);
-			//std::cout << "Set obj Damage" << std::endl;
+			std::cout << "Set obj Damage" << std::endl;
 		}
 		else if (word == "TYPE")
 		{
-			std::tr1::regex regex("TYPE (.*)");
-			std::tr1::cmatch matches;
-			std::tr1::regex_match(line.c_str(), matches, regex);
+			boost::regex regex("TYPE (.*)");
+			boost::cmatch matches;
+			boost::regex_match(line.c_str(), matches, regex);
 			std::string type(matches[1]);
 			obj->setType(type);
+			std::cout << "Set obj type" << std::endl;
 		}
 		else if (word == "WEIGHT")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setWeight(d);
-			//std::cout << "Set obj weight" << std::endl;
+			std::cout << "Set obj weight" << std::endl;
 		}
 		else if (word == "HIT")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setHit(d);
-			//std::cout << "Set obj hit bonus" << std::endl;
+			std::cout << "Set obj hit bonus" << std::endl;
 		}
 		else if (word == "ATTR")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setAttribute(d);
-			//std::cout << "Set obj attribute" << std::endl;
+			std::cout << "Set obj attribute" << std::endl;
 		}
 		else if (word == "VAL")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setValue(d);
-			//std::cout << "Set obj value" << std::endl;
+			std::cout << "Set obj value" << std::endl;
 		}
 		else if (word == "DODGE")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setDodge(d);
-			//std::cout << "Set obj dodge bonus" << std::endl;
+			std::cout << "Set obj dodge bonus" << std::endl;
 		}
 		else if (word == "DEF")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setDefence(d);
-			//std::cout << "Set obj defence bonus" << std::endl;
+			std::cout << "Set obj defence bonus" << std::endl;
 		}
 		else if (word == "END")
 		{
 			if (!obj->isFinished())
 			{
-				//std::cout << "obj not finished" << std::endl;
+				std::cerr << "obj not finished" << std::endl;
 				continue;
 			}
 			definitions.push_back(obj);
 			obj = NULL;
 			//std::cout << *obj << std::endl << std::endl;
-			//std::cout << "obj finished" << std::endl;
+			std::cout << "obj finished" << std::endl;
 		}
 		else
 		{
@@ -160,14 +165,25 @@ int ItemDef::parseObjects()
 			break;
 		}
 	}
+	std::cout << definitions.size() << std::endl;
 	return 0;
 }
 
 
-ItemDef::ItemDef()
-{
-}
-
+ItemDef::ItemDef():
+	nameSet(false),
+	descSet(false),
+	typeSet(false),
+	symbSet(false),
+	colorSet(false),
+	hitSet(false),
+	damSet(false),
+	dodgeSet(false),
+	defSet(false),
+	weightSet(false),
+	spdSet(false),
+	attrSet(false),
+	valueSet(false){}
 
 ItemDef::~ItemDef()
 {
@@ -185,97 +201,102 @@ void ItemDef::setType(std::string t)
 		type |= ITEM_WEAPON;
 		setSymbol('|');
 	}
-	if (t == "OFFHAND")
+	else if (t == "OFFHAND")
 	{
 		type |= ITEM_OFFHAND;
 		setSymbol(')');
 	}
-	if (t == "RANGED")
+	else if (t == "RANGED")
 	{
 		type |= ITEM_RANGED;
 		setSymbol('}');
 	}
-	if (t == "ARMOR")
+	else if (t == "ARMOR")
 	{
 		type |= ITEM_WEAPON;
 		setSymbol('[');
 	}
-	if (t == "HELMET")
+	else if (t == "HELMET")
 	{
 		type |= ITEM_HELMET;
 		setSymbol(']');
 	}
-	if (t == "CLOAK")
+	else if (t == "CLOAK")
 	{
 		type |= ITEM_CLOAK;
 		setSymbol('(');
 	}
-	if (t == "GLOVES")
+	else if (t == "GLOVES")
 	{
 		type |= ITEM_GLOVES;
 		setSymbol('{');
 	}
-	if (t == "BOOTS")
+	else if (t == "BOOTS")
 	{
 		type |= ITEM_BOOTS;
 		setSymbol('\\');
 	}
-	if (t == "RING")
+	else if(t == "RING")
 	{
 		type |= ITEM_RING;
 		setSymbol('=');
 	}
-	if (t == "AMULET")
+	else if (t == "AMULET")
 	{
 		type |= ITEM_AMULET;
 		setSymbol('\"');
 	}
-	if (t == "LIGHT")
+	else if (t == "LIGHT")
 	{
 		type |= ITEM_LIGHT;
 		setSymbol('_');
 	}
-	if (t == "SCROLL")
+	else if (t == "SCROLL")
 	{
 		type |= ITEM_SCROLL;
 		setSymbol('~');
 	}
-	if (t == "BOOK")
+	else if (t == "BOOK")
 	{
 		type |= ITEM_BOOK;
 		setSymbol('?');
 	}
-	if (t == "FLASK")
+	else if (t == "FLASK")
 	{
 		type |= ITEM_FLASK;
 		setSymbol('!');
 	}
-	if (t == "GOLD")
+	else if (t == "GOLD")
 	{
 		type |= ITEM_GOLD;
 		setSymbol('$');
 	}
-	if (t == "AMMUNITION")
+	else if (t == "AMMUNITION")
 	{
 		type |= ITEM_AMMO;
 		setSymbol('/');
 	}
-	if (t == "FOOD")
+	else if (t == "FOOD")
 	{
 		type |= ITEM_FOOD;
 		setSymbol(',');
 	}
-	if (t == "WAND")
+	else if (t == "WAND")
 	{
 		type |= ITEM_WAND;
 		setSymbol('-');
 	}
-	if (t == "CONTAINER")
+	else if (t == "CONTAINER")
 	{
 		type |= ITEM_CONTAINER;
 		setSymbol('%');
 	}
-	std::cout << getSymbol() << std::endl;
+	else
+	{
+		std::cerr << "Invalid type: " << t << std::endl;
+		return;
+	}
+	typeSet = true;
 }
 
 unsigned char ItemDef::getColor()
@@ -294,6 +315,7 @@ void ItemDef::setColor(std::string col)
 	else if (col == "YELLOW") color = COLOR_YELLOW;
 	else if (col == "CYAN") color = COLOR_CYAN;
 	else throw "Invalid color selected: " + col;
+	colorSet = true;
 }
 
 ItemDef* ItemDef::getRandom()
@@ -321,9 +343,9 @@ std::ostream &operator<<(std::ostream &o, const ItemDef &i)
 
 void ItemDef::deleteDefs()
 {
-	while (definitions.empty())
+	unsigned int i;
+	for(i = 0; i<definitions.size(); i++)
 	{
-		delete definitions[definitions.size() - 1];
-		definitions.pop_back();
+		delete definitions[i];
 	}
 }

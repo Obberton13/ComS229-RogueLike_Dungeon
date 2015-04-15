@@ -1,24 +1,26 @@
-DungeonGame: main.o generator.o pathfinding.o bheap.o
-	gcc -Wall main.o generator.o pathfinding.o bheap.o -o DungeonGame -lncurses
+DungeonGame: Dungeon.o Item.o DungeonTile.o NPC.o Dice.o NPCdef.o ItemDef.o
+	g++ -Wall Dungeon.o Item.o DungeonTile.o NPC.o Dice.o NPCdef.o ItemDef.o -o DungeonGame -lncurses -lboost_regex
 
-main.o: dungeon.h main.c
-	gcc -Wall -Werror -ggdb main.c -c
+Dungeon.o: Dungeon.h Dungeon.cpp
+	g++ -Wall -Werror -ggdb Dungeon.cpp -c
 
-generator.o: dungeon.h generator.c
-	gcc -Wall -Werror -ggdb generator.c -c
+Item.o: Item.h Item.cpp
+	g++ -Wall -Werror -ggdb Item.cpp -c
 
-pathfinding.o: pathfinding.c bheap.h dungeon.h pathfinding.h
-	gcc -Wall -Werror -ggdb pathfinding.c -c
+DungeonTile.o: DungeonTile.cpp DungeonTile.h
+	g++ -Wall -Werror -ggdb DungeonTile.cpp -c
 
-heaptest: heaptest.o bheap.o
-	gcc -Wall heaptest.o bheap.o -o test
+NPC.o: NPC.cpp NPC.h
+	g++ -Wall  -Werror -ggdb NPC.cpp -c
 
-heaptest.o: heaptest.c bheap.h
-	gcc -Wall -Werror -ggdb heaptest.c -c
+Dice.o: Dice.cpp Dice.h
+	g++ -Wall -Werror -ggdb Dice.cpp -c
 
-bheap.o: bheap.c bheap.h
-	gcc -Wall -Werror -ggdb bheap.c -c
+NPCdef.o: NPCdef.cpp NPCdef.h
+	g++ -Wall -Werror -std=c++11 -ggdb NPCdef.cpp -c
 
+ItemDef.o: ItemDef.cpp ItemDef.h
+	g++ -Wall -Werror -std=c++11 -ggdb ItemDef.cpp -c
 
 clean:
 	rm -f *.o DungeonGame

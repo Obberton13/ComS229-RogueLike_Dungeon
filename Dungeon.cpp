@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <time.h>
+#include <climits>
 
 static int gameLoop();
 
@@ -26,13 +27,11 @@ int main(int argc, char *argv[])
 
 int gameLoop()
 {
-	char in;
 	Dungeon *d = new Dungeon;
 	while (d->game_loop()){}
 	std::cout << *d;
 	delete d;
-	std::cin >> in;
-	return in;
+	return 1;
 }
 
 Dungeon::Dungeon()
@@ -41,27 +40,26 @@ Dungeon::Dungeon()
 	for (int i = 0; i < DUNGEON_X; i++)
 	{
 		map[i] = new DungeonTile[DUNGEON_Y]();
-	}
+	}//*/
 	generate();
 }
 
 Dungeon::~Dungeon()
 {
-	/*for (int i = 0; i < DUNGEON_X; i++)
+	for (int i = 0; i < DUNGEON_X; i++)
 	{
-		delete map[i];
+		delete[] map[i];
 	}
-	delete map;
-	while (npcs.empty())
+	delete[] map;
+	unsigned int i = 0;
+	for(i = 0; i< npcs.size(); i++)
 	{
-		delete npcs[npcs.size() - 1];
-		npcs.pop_back();
+		delete npcs[i];
 	}
-	while (items.empty())
+	for(i = 0; i<items.size(); i++)
 	{
-		delete items[items.size() - 1];
-		items.pop_back();
-	}*/
+		delete items[i];
+	}
 }
 
 void Dungeon::generate()
@@ -97,7 +95,7 @@ void Dungeon::initialize()
 		map[x][0].setX(x);
 		map[x][0].setY(0);
 		map[x][DUNGEON_Y-1].setX(x);
-		map[x][DUNGEON_Y].setY(DUNGEON_Y-1);
+		map[x][DUNGEON_Y-1].setY(DUNGEON_Y-1);
 	}
 	for (y = 1; y < DUNGEON_Y-1; y++)
 	{
@@ -114,7 +112,7 @@ void Dungeon::initialize()
 
 void Dungeon::generate_rooms()
 {
-	int attempts = 0;
+	int attempts  = 0;
 	while ((attempts < MAX_ROOM_ATTEMPTS
 		|| rooms.size() < MIN_ROOMS)
 		&& rooms.size() < MAX_ROOMS)
@@ -244,6 +242,7 @@ void Dungeon::spawn_player()
 	NPC* tmp = new NPC(x, y, pc);
 	map[x][y].set_monster(tmp);
 	npcs.push_back(tmp);
+	delete pc;
 }
 
 void Dungeon::spawn_monsters()
@@ -319,7 +318,7 @@ void Dungeon::find_monster_distances()
 
 int Dungeon::game_loop()
 {
-	int i;
+	unsigned int i;
 	for (i = 0; i < npcs.size(); i++)
 	{
 	}
@@ -360,3 +359,4 @@ std::ostream &operator<<(std::ostream &o, const Dungeon &d)
 	}
 	return o;
 }
+

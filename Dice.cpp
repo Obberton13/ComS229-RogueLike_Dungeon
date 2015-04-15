@@ -1,11 +1,11 @@
 #include "Dice.h"
 #include <sstream>
-#include <regex>
+#include <boost/regex.hpp>
 
 
 Dice::Dice()
 {
-	this->base = 0;
+	this->base = 0; 
 	this->number = 0;
 	this->sides = 0;
 	this->assigned = false;
@@ -13,9 +13,9 @@ Dice::Dice()
 
 Dice::Dice(const std::string &str)
 {
-	std::tr1::regex regex("^([0-9]+)\\+([0-9]+)d([0-9]+)$");
-	std::tr1::cmatch matches;
-	std::tr1::regex_match(str.c_str(), matches, regex);
+	boost::regex regex("^([0-9]+)\\+([0-9]+)d([0-9]+)$");
+	boost::cmatch matches;
+	boost::regex_match(str.c_str(), matches, regex);
 	std::istringstream(matches[1]) >> this->base;
 	std::istringstream(matches[2]) >> this->number;
 	std::istringstream(matches[3]) >> this->sides;

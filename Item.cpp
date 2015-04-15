@@ -6,8 +6,8 @@ Item::Item()
 }
 
 Item::Item(unsigned char x, unsigned char y) :
-	y(y),
 	x(x),
+	y(y),
 	definition(ItemDef::getRandom())
 {
 }

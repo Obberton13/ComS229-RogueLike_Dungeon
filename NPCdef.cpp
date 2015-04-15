@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include <regex>
+#include <boost/regex.hpp>
 
 std::vector<NPCdef*> NPCdef::definitions;
 
@@ -110,8 +110,12 @@ const std::vector<NPCdef*> &NPCdef::getDefs()
 
 int NPCdef::parseDefs()
 {
-	std::string path("monsterdef.txt");
-	std::ifstream f(path);
+	std::string path;
+	std::string home;
+	std::string file= ".rlg229/monster_desc.txt";
+	home = getenv("HOME");
+	path = home + "/" + file;
+	std::ifstream f(path.c_str());
 	if (!f)
 	{
 		std::cout << "File does not exist" << std::endl;
@@ -121,7 +125,8 @@ int NPCdef::parseDefs()
 	std::getline(f, line);
 	if (line != "RLG229 MONSTER DESCRIPTION 1")
 	{
-		std::cout << "File has incorrect metadata" << std::endl;
+		std::cerr << "File has incorrect metadata" << std::endl;
+		std::cerr << line << std::endl;
 		return 1;
 	}
 	NPCdef *monster;
@@ -147,9 +152,9 @@ int NPCdef::parseDefs()
 		}
 		else if (word == "NAME")
 		{
-			std::tr1::regex regex("NAME (.*)");
-			std::tr1::cmatch matches;
-			std::tr1::regex_match(line.c_str(), matches, regex);
+			boost::regex regex("NAME (.*)");
+			boost::cmatch matches;
+			boost::regex_match(line.c_str(), matches, regex);
 			std::string str(matches[1]);
 			monster->setName(str);
 			//std::cout << "Set monster's name" << std::endl;
@@ -190,9 +195,9 @@ int NPCdef::parseDefs()
 		}
 		else if (word == "ABIL")
 		{
-			std::tr1::regex regex("ABIL (.*)");
-			std::tr1::cmatch matches;
-			std::tr1::regex_match(line.c_str(), matches, regex);
+			boost::regex regex("ABIL (.*)");
+			boost::cmatch matches;
+			boost::regex_match(line.c_str(), matches, regex);
 			std::string str(matches[1]);
 			monster->setAbilities(str);
 			//std::cout << "Set monster Abilities" << std::endl;
@@ -227,21 +232,21 @@ int NPCdef::parseDefs()
 			return 1;
 		}
 	}
+	std::cerr << definitions.size() << std::endl;
 	return 0;
 }
 
 NPCdef *NPCdef::getRandom()
 {
 	unsigned int index = std::rand() % definitions.size();
-	NPCdef * def = definitions[index];
 	return definitions[index];
 }
 
 void NPCdef::deleteDefs()
 {
-	while (definitions.empty())
+	unsigned int i;
+	for(i = 0; i<definitions.size(); i++)
 	{
-		delete definitions[definitions.size() - 1];
-		definitions.pop_back();
+		delete definitions[i];
 	}
 }
