@@ -10,7 +10,8 @@ private:
 	char symbol;
 	int hitpoints, speed, initiative;
 	unsigned int abilities;
-	std::string name, description, color;
+	std::string name, description;
+	short color;
 	Dice damage;
 	bool isAlive;
 public:
@@ -25,6 +26,8 @@ public:
 	inline unsigned char getY(){ return y; }
 	inline unsigned int getAbilities(){ return abilities; }
 	inline int getInitiative() { return initiative; }
+	inline char getSymbol(){return symbol;}
+	inline short getColor() {return color;}
 
 	inline int isNextTurn()
 	{

@@ -11,6 +11,9 @@ public:
 	Item(unsigned char x, unsigned char y, ItemDef *def);
 	~Item();
 
+	inline char getSymbol() {return definition->getSymbol();}
+	inline short getColor() {return definition->getColor();}
+
 	friend std::ostream &operator<<(std::ostream &o, Item &i);
 };
 

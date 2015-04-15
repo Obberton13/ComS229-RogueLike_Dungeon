@@ -14,7 +14,7 @@ NPC.o: NPC.cpp NPC.h
 	g++ -Wall  -Werror -ggdb NPC.cpp -c
 
 Dice.o: Dice.cpp Dice.h
-	g++ -Wall -Werror -ggdb Dice.cpp -c
+	g++ -Wall -Werror -std=c++11 -ggdb Dice.cpp -c
 
 NPCdef.o: NPCdef.cpp NPCdef.h
 	g++ -Wall -Werror -std=c++11 -ggdb NPCdef.cpp -c

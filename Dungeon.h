@@ -14,11 +14,13 @@
 #define MAX_ROOM_ATTEMPTS 2000
 #define MAX_MONSTERS 30
 #define MAX_ITEMS 30
+#define SCREEN_W 80
+#define SCREEN_H 24
 
 class Dungeon
 {
 public:
-	Dungeon();
+	Dungeon(); 
 	~Dungeon();
 	void generate();
 	int game_loop();
@@ -50,6 +52,8 @@ private:
 	void spawn_items();
 	void find_monster_distances();
 	int move_monster(unsigned int index, unsigned char x, unsigned char y);
+	void print();
+	void putchar(unsigned char x, unsigned char y, unsigned char posX, unsigned char posY);
 };
 
 std::ostream &operator<<(std::ostream &o, const Dungeon &d);

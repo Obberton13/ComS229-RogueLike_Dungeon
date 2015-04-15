@@ -50,7 +50,7 @@ private:
 	bool symbSet;
 	char symbol;
 	bool colorSet;
-	unsigned char color;
+	short color;
 	bool hitSet;
 	Dice hit;
 	bool damSet;
@@ -84,7 +84,7 @@ public:
 	inline char getSymbol(){ return symbol; }
 	inline void setSymbol(char s){ symbol = s; symbSet = true; }
 
-	unsigned char getColor();// { return color; }
+	short getColor();// { return color; }
 	void setColor(std::string c);//{ color = c; colorSet = true; }
 
 	inline Dice getHit() { return hit; }

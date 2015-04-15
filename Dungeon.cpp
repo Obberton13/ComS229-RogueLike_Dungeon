@@ -10,6 +10,20 @@ static int gameLoop();
 
 int main(int argc, char *argv[])
 {
+	initscr();
+	raw();
+	noecho();
+	curs_set(0);
+	keypad(stdscr, TRUE);
+	start_color();
+	init_pair(COLOR_BLUE, COLOR_BLUE, COLOR_BLACK);
+	init_pair(COLOR_RED, COLOR_RED, COLOR_BLACK);
+	init_pair(COLOR_GREEN, COLOR_GREEN, COLOR_BLACK);
+	init_pair(COLOR_MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
+	init_pair(COLOR_YELLOW, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(COLOR_CYAN, COLOR_CYAN, COLOR_BLACK);
+	init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
+	init_pair(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
 	if (NPCdef::parseDefs())
 	{
 		return 1;
@@ -20,8 +34,10 @@ int main(int argc, char *argv[])
 	}
 	srand(time(0));
 	while (!gameLoop()){}
+	getch();
 	NPCdef::deleteDefs();
 	ItemDef::deleteDefs();
+	endwin();
 	return 0;
 }
 
@@ -29,7 +45,6 @@ int gameLoop()
 {
 	Dungeon *d = new Dungeon;
 	while (d->game_loop()){}
-	std::cout << *d;
 	delete d;
 	return 1;
 }
@@ -319,6 +334,8 @@ void Dungeon::find_monster_distances()
 int Dungeon::game_loop()
 {
 	unsigned int i;
+	print();
+	refresh();
 	for (i = 0; i < npcs.size(); i++)
 	{
 	}
@@ -344,6 +361,65 @@ int Dungeon::move_monster(unsigned int index, unsigned char x, unsigned char y)
 	map[x][y].set_monster(monster);
 	monster->setPos(x, y);
 	return 0;
+}
+
+void Dungeon::print()
+{
+	unsigned char xStart = npcs[0]->getX()-(SCREEN_W/2);
+	unsigned char yStart = npcs[0]->getY()-(SCREEN_H/2);
+	if(xStart < 0) xStart = 0;
+	if(yStart < 0) yStart = 0;
+	if(xStart+SCREEN_W >= DUNGEON_X) xStart = DUNGEON_X - SCREEN_W -1;
+	if(yStart+SCREEN_H >= DUNGEON_Y) yStart = DUNGEON_Y - SCREEN_H -1;
+	unsigned char x, y;
+	for(x = 0; x < SCREEN_W; x++)
+	{
+		for(y = 0; y < SCREEN_H; y++)
+		{
+			putchar(x+xStart, y+yStart, x, y);
+		}
+	}
+}
+
+void Dungeon::putchar(unsigned char x, unsigned char y, unsigned char posX, unsigned char posY)
+{
+	NPC* npc = map[x][y].get_monster();
+	if(npc)
+	{
+		attron(COLOR_PAIR(npc->getColor()));
+		mvaddch(posY, posX, npc->getSymbol());
+		attroff(COLOR_PAIR(npc->getColor()));
+		return;
+	}
+	Item* item = map[x][y].getItem();
+	if(item)
+	{
+		attron(COLOR_PAIR(item->getColor()));
+		mvaddch(posY, posX, item->getSymbol());
+		attroff(COLOR_PAIR(item->getColor()));
+		return;
+	}
+	switch(map[x][y].get_type())
+	{
+	case ter_corridor:
+		mvaddch(posY, posX, ',');
+		return;
+	case ter_room:
+		mvaddch(posY, posX, '.');
+		return;
+	case ter_immutable:
+		mvaddch(posY, posX, '|');
+		return;
+	case ter_wall:
+		mvaddch(posY, posX, '#');
+		return;
+	default: 
+		std::cerr << "Invalid dungeon Tile" << std::endl;
+		attron(COLOR_PAIR(COLOR_RED));
+		mvaddch(posY, posX, '*');
+		attroff(COLOR_PAIR(COLOR_RED));
+	}
+	return;
 }
 
 std::ostream &operator<<(std::ostream &o, const Dungeon &d)

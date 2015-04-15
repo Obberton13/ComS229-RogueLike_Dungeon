@@ -44,7 +44,7 @@ int ItemDef::parseObjects()
 				continue;
 			}
 			obj = new ItemDef();
-			std::cout << "New obj made" << std::endl;
+			//std::cout << "New obj made" << std::endl;
 		}
 		else if (word == "NAME")
 		{
@@ -53,7 +53,7 @@ int ItemDef::parseObjects()
 			boost::regex_match(line.c_str(), matches, regex);
 			std::string str(matches[1]);
 			obj->setName(str);
-			std::cout << "Set obj's name" << std::endl;
+			//std::cout << "Set obj's name" << std::endl;
 		}
 		else if (word == "DESC")
 		{
@@ -66,35 +66,35 @@ int ItemDef::parseObjects()
 				std::getline(f, line);
 			}
 			obj->setDescription(description);
-			std::cout << "Set obj description" << std::endl;
+			//std::cout << "Set obj description" << std::endl;
 		}
 		else if (word == "SYMB")
 		{
 			char c;
 			iss >> c;
 			obj->setSymbol(c);
-			std::cout << "Set obj symbol" << std::endl;
+			//std::cout << "Set obj symbol" << std::endl;
 		}
 		else if (word == "COLOR")
 		{
 			std::string color;
 			iss >> color;
 			obj->setColor(color);
-			std::cout << "Set obj color to: " << color << std::endl;
+			//std::cout << "Set obj color to: " << color << std::endl;
 		}
 		else if (word == "SPEED")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setSpeed(d);
-			std::cout << "Set obj speed" << std::endl;
+			//std::cout << "Set obj speed" << std::endl;
 		}
 		else if (word == "DAM")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setDamage(d);
-			std::cout << "Set obj Damage" << std::endl;
+			//std::cout << "Set obj Damage" << std::endl;
 		}
 		else if (word == "TYPE")
 		{
@@ -103,49 +103,49 @@ int ItemDef::parseObjects()
 			boost::regex_match(line.c_str(), matches, regex);
 			std::string type(matches[1]);
 			obj->setType(type);
-			std::cout << "Set obj type" << std::endl;
+			//std::cout << "Set obj type" << std::endl;
 		}
 		else if (word == "WEIGHT")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setWeight(d);
-			std::cout << "Set obj weight" << std::endl;
+			//std::cout << "Set obj weight" << std::endl;
 		}
 		else if (word == "HIT")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setHit(d);
-			std::cout << "Set obj hit bonus" << std::endl;
+			//std::cout << "Set obj hit bonus" << std::endl;
 		}
 		else if (word == "ATTR")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setAttribute(d);
-			std::cout << "Set obj attribute" << std::endl;
+			//std::cout << "Set obj attribute" << std::endl;
 		}
 		else if (word == "VAL")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setValue(d);
-			std::cout << "Set obj value" << std::endl;
+			//std::cout << "Set obj value" << std::endl;
 		}
 		else if (word == "DODGE")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setDodge(d);
-			std::cout << "Set obj dodge bonus" << std::endl;
+			//std::cout << "Set obj dodge bonus" << std::endl;
 		}
 		else if (word == "DEF")
 		{
 			iss >> word;
 			Dice d(word);
 			obj->setDefence(d);
-			std::cout << "Set obj defence bonus" << std::endl;
+			//std::cout << "Set obj defence bonus" << std::endl;
 		}
 		else if (word == "END")
 		{
@@ -157,7 +157,7 @@ int ItemDef::parseObjects()
 			definitions.push_back(obj);
 			obj = NULL;
 			//std::cout << *obj << std::endl << std::endl;
-			std::cout << "obj finished" << std::endl;
+			//std::cout << "obj finished" << std::endl;
 		}
 		else
 		{
@@ -165,7 +165,7 @@ int ItemDef::parseObjects()
 			break;
 		}
 	}
-	std::cout << definitions.size() << std::endl;
+	//std::cout << definitions.size() << std::endl;
 	return 0;
 }
 
@@ -299,7 +299,7 @@ void ItemDef::setType(std::string t)
 	typeSet = true;
 }
 
-unsigned char ItemDef::getColor()
+short ItemDef::getColor()
 {
 	return color;
 }

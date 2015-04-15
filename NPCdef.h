@@ -1,6 +1,7 @@
 #pragma once
 #include "Dice.h"
 #include <vector>
+#include <curses.h>
 
 #define NPC_SMART 		0x00000001
 #define NPC_TELEPATH	0x00000002
@@ -35,16 +36,6 @@
 #define NPC_BIT31		0x40000000
 #define NPC_BIT32		0x80000000
 
-//TODO temporary color definitions for Windows b/c no ncurses
-#define COLOR_BLACK 1
-#define COLOR_WHITE 2
-#define COLOR_BLUE 3
-#define COLOR_CYAN 4
-#define COLOR_YELLOW 5
-#define COLOR_MAGENTA 6
-#define COLOR_RED 7
-#define COLOR_GREEN 8
-
 class NPCdef
 {
 private:
@@ -55,7 +46,7 @@ private:
 	bool nameSet;
 	std::string description;
 	bool descriptionSet;
-	std::string color;
+	short color;
 	bool colorSet;
 	unsigned int abilities;
 	bool abilitiesSet;
@@ -67,7 +58,7 @@ public:
 	char getSymbol();
 	std::string getName();
 	std::string getDescription();
-	std::string getColor();
+	short getColor();
 	unsigned int getAbilities();
 	Dice getSpeed();
 	Dice getDamage();

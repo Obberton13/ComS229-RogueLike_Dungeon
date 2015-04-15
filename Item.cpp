@@ -12,7 +12,6 @@ Item::Item(unsigned char x, unsigned char y) :
 {
 }
 
-
 Item::~Item()
 {
 }

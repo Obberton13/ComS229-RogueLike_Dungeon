@@ -27,7 +27,7 @@ std::string NPCdef::getDescription()
 {
 	return this->description;
 }
-std::string NPCdef::getColor()
+short NPCdef::getColor()
 {
 	return this->color;
 }
@@ -232,7 +232,7 @@ int NPCdef::parseDefs()
 			return 1;
 		}
 	}
-	std::cerr << definitions.size() << std::endl;
+	//std::cerr << definitions.size() << std::endl;
 	return 0;
 }
 
