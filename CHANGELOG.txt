@@ -51,6 +51,17 @@
 2015/03/24 12:59 - Fixed crash on using uninitialized value, now I need to fix the calculatefilesize function.
 2015/03/24 21:23 - calculatefilesize function is done, but uninitialized value problem is back.
 
+-----Project 1.07-----
+
+2015/03/29 00:49 Moved old project to a new folder for conversion to C++. Did this entire project in its own folder
+
+-----Project 1.08-----
+
+2015/04/07 11:59 Again, did this project in its own folder.
+
+-----Project 1.09-----
+
+2015/04/14 21:24 Mostly done with converting the entire program to C++. Monsters cannot yet pathfind, and there is no saving and loading. Only works on windows.
 
 
 
