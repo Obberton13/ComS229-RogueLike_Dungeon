@@ -13,6 +13,7 @@ public:
 
 	inline char getSymbol() {return definition->getSymbol();}
 	inline short getColor() {return definition->getColor();}
+	inline unsigned int rollDamage() {return definition->getDamage().Roll();}
 
 	friend std::ostream &operator<<(std::ostream &o, Item &i);
 };

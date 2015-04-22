@@ -19,7 +19,6 @@ Dice::Dice(const std::string &str)
 	std::istringstream(matches[1]) >> this->base;
 	std::istringstream(matches[2]) >> this->number;
 	std::istringstream(matches[3]) >> this->sides;
-	//std::cout << "Assigned value to die" << std::endl;
 	this->assigned = true;
 }
 
@@ -46,7 +45,12 @@ Dice &Dice::operator=(const Dice &other)
 
 unsigned int Dice::Roll()
 {
-	return 0;
+	unsigned int result = base, i;
+	for(i = 0; i < number; i++)
+	{
+		result += (random() % sides) + 1;//somehow, this works even when I don't include <random>
+	}
+	return result;
 }
 
 std::ostream &operator<<(std::ostream &o, const Dice &d)

@@ -37,7 +37,7 @@ NPC::NPC(unsigned char x, unsigned char y, NPCdef *def) :
 {
 	this->hitpoints = def->getHP().Roll();
 	this->speed = def->getSpeed().Roll();
-	this->initiative = this->speed;
+	this->initiative = 0;
 	this->symbol = def->getSymbol();
 	this->name = def->getName();
 	this->description = def->getDescription();
@@ -66,17 +66,17 @@ void NPC::hit(int amount)
 
 void NPC::reset_initiative()
 {
-	this->initiative = this->speed;
+	this->initiative = 0;
 }
 
 void NPC::use_initiative()
 {
-	this->initiative--;
+	this->initiative++;
 }
 
 bool NPC::is_next_turn()
 {
-	return this->initiative==0;
+	return this->initiative >= 10/speed;
 }
 
 NPC::~NPC()

@@ -7,7 +7,7 @@
 #include <climits>
 #include <unistd.h>
 
-static int gameLoop();
+static int gameLoop(PC* pc, NPCdef* pcdef);
 
 int main(int argc, char *argv[])
 {
@@ -34,23 +34,48 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	srand(time(0));
-	while (!gameLoop());//do nothing but the inner game loop.
+	NPCdef* pc = new NPCdef();
+	pc->setAbilities("TUNNEL TELEPATH");
+	pc->setColor("WHITE");
+	pc->setDamage(Dice(0, 2, 6));
+	pc->setDescription("The player character. It's YOU!");
+	pc->setName("Intarmin Hanurnatural");
+	pc->setHP(Dice(15, 2, 8));
+	pc->setSpeed(Dice(10, 0, 0));
+	pc->setSymbol('@');
+	PC* player = new PC(pc);
+	while (!gameLoop(player, pc));//do nothing but the inner game loop.
+	delete pc;
 	NPCdef::deleteDefs();
 	ItemDef::deleteDefs();
 	endwin();
 	return 0;
 }
 
-int gameLoop()
+int gameLoop(PC* pc, NPCdef* pcdef)
 {
-	Dungeon *d = new Dungeon;
-	while (!d->game_loop())
-		;//do nothing except the game loop
+	Dungeon *d = new Dungeon(pc);
+	int test;
+	while (!(test = d->game_loop()))
+	{
+		if(test == 2)
+		{
+			delete pc;
+			pc = new PC(pcdef);
+			delete d;
+			d = new Dungeon(pc);
+		}
+		if(test == 3)
+		{
+			delete d;
+			d = new Dungeon(pc);
+		}
+	}
 	delete d;
 	return 1;
 }
 
-Dungeon::Dungeon()
+Dungeon::Dungeon(PC* pc): pc(pc)
 {
 	scrX = 0;
 	scrY = 0;
@@ -58,7 +83,7 @@ Dungeon::Dungeon()
 	for (int i = 0; i < DUNGEON_X; i++)
 	{
 		map[i] = new DungeonTile[DUNGEON_Y]();
-	}//*/
+	}
 	generate();
 }
 
@@ -246,22 +271,13 @@ void Dungeon::connect_rooms(unsigned char rm1, unsigned char rm2)
 
 void Dungeon::spawn_player()
 {
-	NPCdef* pc = new NPCdef();
-	pc->setAbilities("TUNNEL TELEPATH");
-	pc->setColor("WHITE");
-	pc->setDamage(Dice(0, 2, 6));
-	pc->setDescription("The player character. It's YOU!");
-	pc->setName("Intarmin Hanurnatural");
-	pc->setHP(Dice(15, 2, 8));
-	pc->setSpeed(Dice(10, 0, 0));
-	pc->setSymbol('@');
 	int rm = 0;
 	unsigned char x = (rand() % rooms[rm].w) + rooms[rm].x;
 	unsigned char y = (rand() % rooms[rm].h) + rooms[rm].y;
-	NPC* tmp = new NPC(x, y, pc);
-	map[x][y].set_monster(tmp);
-	npcs.push_back(tmp);
-	delete pc;
+	scrX = x - SCREEN_W/2;
+	scrY = y - SCREEN_H/2;
+	pc->setPos(x, y);
+	map[x][y].set_monster(pc);
 }
 
 void Dungeon::spawn_monsters()
@@ -272,7 +288,7 @@ void Dungeon::spawn_monsters()
 		int rm = (std::rand() % (rooms.size() - 1)) + 1;
 		x = (rand() % rooms[rm].w) + rooms[rm].x;
 		y = (rand() % rooms[rm].h) + rooms[rm].y;
-		NPC* tmp = new NPC(x, y);
+		NPC* tmp = new NPC(x, y);//this line is what valgrind complains about a lot
 		NPC* existing = map[x][y].get_monster();
 		if(existing)
 		{
@@ -308,8 +324,8 @@ void Dungeon::find_monster_distances()
 		}
 	}
 	std::vector<DungeonTile*> *q = new std::vector<DungeonTile*>();
-	x = npcs[0]->getX();
-	y = npcs[0]->getY();
+	x = pc->getX();
+	y = pc->getY();
 	map[x][y].set_dist_to_player(0);
 	q->push_back(&map[x][y]);
 	char offsetX[8] = {0, 0, -1, -1, -1, 1, 1, 1};
@@ -344,6 +360,13 @@ int Dungeon::game_loop()
 {
 	unsigned int i;
 	print();//TODO debugging switch statement.
+	pc->use_initiative();
+	if(pc->is_next_turn())
+	{
+		while(player_input())
+			;
+		pc->reset_initiative();
+	}
 	for (i = 0; i < npcs.size(); i++)
 	{
 		if(!npcs[i]->isAlive())//If the monster is DEAD, don't worry about it.
@@ -360,13 +383,6 @@ int Dungeon::game_loop()
 			npcs[i]->use_initiative();
 			continue;
 		}
-		if(i==0)//If it is the player's turn...
-		{
-			while(player_input())//Do everything the player wants.
-					//In a while loop because some things (like Look Mode) should
-					//not use a game turn.
-				;
-		}
 		else
 		{
 			//Move the monster, or have the monster attack.
@@ -375,6 +391,7 @@ int Dungeon::game_loop()
 				current_state = GAME_DEATH;
 				return 2;
 			}
+			npcs[i]->reset_initiative();
 		}
 	}
 	if(current_state == GAME_DEATH) return 1;
@@ -392,7 +409,7 @@ void Dungeon::move_monster(NPC* npc, unsigned char x, unsigned char y)
 void Dungeon::print()
 {
 	if(scrX < 0) scrX = 0;
-	if(scrY < 0) scrX = 0;
+	if(scrY < 0) scrY = 0;
 	if(scrX+SCREEN_W >= DUNGEON_X) scrX = DUNGEON_X - SCREEN_W;
 	if(scrY+SCREEN_H >= DUNGEON_Y) scrY = DUNGEON_Y - SCREEN_H;
 	unsigned char x, y;
@@ -401,15 +418,6 @@ void Dungeon::print()
 		for(y = 0; y < SCREEN_H; y++)
 		{
 			putchar(x+scrX, y+scrY, x, y);
-		}
-	}//*/
-	//don't mind this, just debugging stuff.
-	/*unsigned char x, y;
-	for(x = 0; x < DUNGEON_X; x++)
-	{
-		for(y = 0; y < DUNGEON_Y; y++)
-		{
-			putchar(x, y, x, y);
 		}
 	}//*/
 	refresh();//make sure to actually update the game screen.
@@ -473,23 +481,23 @@ int Dungeon::push_monster(NPC* npc, bool isFirst)
 	unsigned int abilities = npc->getAbilities();
 	if(abilities & (NPC_PASS|NPC_TUNNEL))
 	{
-		unsigned char px = npcs[0]->getX();
-		unsigned char py = npcs[0]->getY();
+		unsigned char px = pc->getX();
+		unsigned char py = pc->getY();
 		newX = (px==x) ? x : (px > x) ? x + 1 : x - 1;
 		newY = (py==y) ? y : (py > y) ? y + 1 : y - 1;
 		//still need to check for existing monsters.
 		NPC* existing = map[newX][newY].get_monster();
-		if(existing == npcs[0])//if the thing that it is trying to move to is the PC
+		if(existing == pc)//if the thing that it is trying to move to is the PC
 		{
 			//attack the PC
-			npc->attack(npcs[0]);
+			npc->attack(pc);
 			return 1;
 		}
 		move_monster(npc, newX, newY);
 		if(push_monster(existing, false))
 		{
-			move_monster(npc, x, y);
-			move_monster(existing, newX, newY);
+			move_monster(npc, x, y);//move the current monster back
+			move_monster(existing, newX, newY);//make sure the map still knows about the existing monster
 			return 1;
 		}
 		if(abilities & NPC_TUNNEL)
@@ -519,9 +527,9 @@ int Dungeon::push_monster(NPC* npc, bool isFirst)
 		if(!isFirst)
 		{
 			//TODO attack the player.
-			npc->attack(npcs[0]);
+			npc->attack(pc);
 			//TODO check if the player is dead, and end the game if they are.
-			if(npcs[0]->isAlive())
+			if(pc->isAlive())
 			{
 				return 2;
 			}
@@ -571,10 +579,7 @@ int Dungeon::player_input()
 		case GAME_QUIT:
 			return quit_action();
 		default:
-			std::string str = "Invalid game state. Exiting.";
-			unsigned char x = SCREEN_W/2 - str.length()/2;
-			unsigned char y = SCREEN_H/2;
-			mvprintw(y, x, str.c_str());
+			std::cerr <<"Invalid game state. Exiting."<<std::endl;
 			exit(1);
 	}
 }
@@ -584,8 +589,54 @@ int Dungeon::look_action()
 	char c = getch();
 	switch(c)
 	{
-		case 27://27 is escape.
-			return 0;
+		case '7':
+		case 'y'://up and left
+			scrX--;
+			scrY--;
+			break;
+		case '8':
+		case 'k'://up
+			scrY--;
+			break;
+		case '9':
+		case 'u'://up and right
+			scrX++;
+			scrY--;
+			break;
+		case '6':
+		case 'l'://right 
+			scrX++;
+			break;
+		case '3':
+		case 'n'://down and right
+			scrY++;
+			scrX++;
+			break;
+		case '2':
+		case 'j'://down
+			scrY++;
+			break;
+		case '1':
+		case 'b'://down and left
+			scrX--;
+			scrY++;
+			break;
+		case '4':
+		case 'h'://left
+			scrX--;
+			break;
+		case 'L'://Look mode
+			current_state = GAME_LOOK;
+			break;
+		case 'S'://quit
+			current_state = GAME_QUIT;
+			quit();
+			break;
+		case 27://exit look mode
+			scrX = pc->getX() - SCREEN_W/2;
+			scrY = pc->getY() - SCREEN_H/2;
+			current_state = GAME_CONTROL;
+			return 1;
 	}
 	print();
 	return 1;
@@ -646,8 +697,8 @@ int Dungeon::control_action()
 
 int Dungeon::move_player(char x, char y)
 {
-	unsigned char newX = npcs[0]->getX()+x;
-	unsigned char newY = npcs[0]->getY()+y;
+	unsigned char newX = pc->getX()+x;
+	unsigned char newY = pc->getY()+y;
 	if(map[newX][newY].get_type()==ter_immutable)
 	{
 		return 1;
@@ -655,8 +706,8 @@ int Dungeon::move_player(char x, char y)
 	NPC* other = map[newX][newY].get_monster();
 	if(other)
 	{
-		//TODO everything involving npcs[0] should be turned into the PC.
-		npcs[0]->attack(other);
+		//TODO everything involving pc should be turned into the PC.
+		pc->attack(other);
 		return 0;
 	}
 	Item* item;
@@ -664,11 +715,11 @@ int Dungeon::move_player(char x, char y)
 	{
 		//TODO make the PC pick up the item.
 	}
-	unsigned char oldX = npcs[0]->getX();
-	unsigned char oldY = npcs[0]->getY();
-	npcs[0]->setPos(newX, newY);
+	unsigned char oldX = pc->getX();
+	unsigned char oldY = pc->getY();
+	pc->setPos(newX, newY);
 	map[oldX][oldY].set_monster(NULL);
-	map[newX][newY].set_monster(npcs[0]);
+	map[newX][newY].set_monster(pc);
 	scrX = newX-SCREEN_W/2;
 	scrY = newY-SCREEN_H/2;
 	map[newX][newY].set_hardness(0);

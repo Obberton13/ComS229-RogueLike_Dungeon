@@ -37,7 +37,7 @@ public:
 
 	inline int isNextTurn()
 	{
-		return initiative == 0;
+		return initiative >= 10/speed;
 	}
 
 	friend std::ostream &operator<<(std::ostream &o, const NPC &npc);

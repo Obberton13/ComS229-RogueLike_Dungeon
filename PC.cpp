@@ -1,7 +1,7 @@
 #include "PC.h"
 
 
-PC::PC()
+PC::PC(NPCdef* def):NPC(0, 0, def)
 {
 	unsigned char i;
 	slots = new Item*[PC_TOTAL_SLOTS];
@@ -33,4 +33,22 @@ Item* PC::get_item(char slot)
 	return slots[(int)slot];
 }
 
-PC::~PC(){}
+void PC::attack(NPC* defender)
+{
+	int i;
+	int dmg = 0;
+	if(!slots[SLOT_WEAPON]) dmg += NPC::damage.Roll();
+	for(i = 0; i < PC_TOTAL_SLOTS; i++)
+	{
+		if(slots[i])
+		{
+			dmg += slots[i]->rollDamage();
+		}
+	}
+	defender->hit(dmg);
+}
+
+PC::~PC()
+{
+	delete[] slots;
+}

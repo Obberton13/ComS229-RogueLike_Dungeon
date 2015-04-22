@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "DungeonTile.h"
+#include "PC.h"
 
 #define DUNGEON_X 160
 #define DUNGEON_Y 96
@@ -20,22 +21,22 @@
 class Dungeon
 {
 public:
-	Dungeon(); 
+	Dungeon(PC* pc); 
 	~Dungeon();
 	void generate();
 	int game_loop();
-//	int save();
 
 	friend std::ostream &operator<<(std::ostream &o, const Dungeon &d);
 
 private:
+	PC* pc;
 	char scrX, scrY;
 	typedef enum game_state {
-		GAME_LOOK,
-		GAME_CONTROL,
-		GAME_INVENTORY,
-		GAME_DEATH,
-		GAME_QUIT
+		GAME_CONTROL = 0,
+		GAME_LOOK = 1,
+		GAME_INVENTORY = 2,
+		GAME_DEATH = 3,
+		GAME_QUIT = 4
 	} game_state_t;
 	struct room
 	{

@@ -5,9 +5,9 @@
 class Dice
 {
 private:
-	int base;
-	int number;
-	int sides;
+	unsigned int base;
+	unsigned int number;
+	unsigned int sides;
 	bool assigned;
 public:
 	Dice();
