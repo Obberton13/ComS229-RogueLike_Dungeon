@@ -3,7 +3,7 @@
 NPC::NPC() :
 	x(0),
 	y(0),
-	isAlive(true)
+	alive(true)
 {
 	NPCdef *def = NPCdef::getRandom();
 	this->hitpoints = def->getHP().Roll();
@@ -12,12 +12,13 @@ NPC::NPC() :
 	this->symbol = def->getSymbol();
 	this->name = def->getName();
 	this->description = def->getDescription();
+	this->abilities = def->getAbilities();
 }
 
 NPC::NPC(unsigned char x, unsigned char y) :
 	x(x),
 	y(y),
-	isAlive(true)
+	alive(true)
 {
 	NPCdef* def = NPCdef::getRandom();
 	this->hitpoints = def->getHP().Roll();
@@ -26,12 +27,13 @@ NPC::NPC(unsigned char x, unsigned char y) :
 	this->symbol = def->getSymbol();
 	this->name = def->getName();
 	this->description = def->getDescription();
+	this->abilities = def->getAbilities();
 }
 
 NPC::NPC(unsigned char x, unsigned char y, NPCdef *def) : 
 	x(x),
 	y(y),
-	isAlive(true)
+	alive(true)
 {
 	this->hitpoints = def->getHP().Roll();
 	this->speed = def->getSpeed().Roll();
@@ -46,6 +48,35 @@ void NPC::setPos(unsigned char x, unsigned char y)
 {
 	this->x = x;
 	this->y = y;
+}
+
+void NPC::attack(NPC* defender)
+{
+	defender->hit(damage.Roll());
+}
+
+void NPC::hit(int amount)
+{
+	this->hitpoints-=amount;
+	if(this->hitpoints<=0)
+	{
+		alive = false;
+	}
+}
+
+void NPC::reset_initiative()
+{
+	this->initiative = this->speed;
+}
+
+void NPC::use_initiative()
+{
+	this->initiative--;
+}
+
+bool NPC::is_next_turn()
+{
+	return this->initiative==0;
 }
 
 NPC::~NPC()

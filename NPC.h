@@ -5,7 +5,7 @@
 
 class NPC
 {
-private:
+protected:
 	unsigned char x, y;
 	char symbol;
 	int hitpoints, speed, initiative;
@@ -13,14 +13,19 @@ private:
 	std::string name, description;
 	short color;
 	Dice damage;
-	bool isAlive;
+	bool alive;
 public:
 	NPC();
 	NPC(unsigned char x, unsigned char y);
 	NPC(unsigned char x, unsigned char y, NPCdef *def);
-	~NPC();
+	virtual ~NPC();
 
 	void setPos(unsigned char x, unsigned char y);
+	virtual void attack(NPC* defender);
+	virtual void hit(int amount);
+	void reset_initiative();
+	void use_initiative();
+	bool is_next_turn();
 
 	inline unsigned char getX(){ return x; }
 	inline unsigned char getY(){ return y; }
@@ -28,6 +33,7 @@ public:
 	inline int getInitiative() { return initiative; }
 	inline char getSymbol(){return symbol;}
 	inline short getColor() {return color;}
+	inline bool isAlive() {return alive;}
 
 	inline int isNextTurn()
 	{

@@ -53,19 +53,24 @@
 
 -----Project 1.07-----
 
-2015/03/29 00:49 Moved old project to a new folder for conversion to C++. Did this entire project in its own folder
+2015/03/29 00:49 - Moved old project to a new folder for conversion to C++. Did this entire project in its own folder
 
 -----Project 1.08-----
 
-2015/04/07 11:59 Again, did this project in its own folder.
+2015/04/07 11:59 - Again, did this project in its own folder.
 
 -----Project 1.09-----
 
-2015/04/14 21:24 Mostly done with converting the entire program to C++. Monsters cannot yet pathfind, and there is no saving and loading. Only works on windows.
-2015/04/15 02:58 Getting this to work on linux is a lot more work than I thought it would be.
-2015/04/15 03:38 Got rid of all memory leaks before converting to ncurses
-2015/04/15 06:51 Successfully converted to ncurses, and even got some colors working.
+2015/04/14 21:24 - Mostly done with converting the entire program to C++. Monsters cannot yet pathfind, and there is no saving and loading. Only works on windows.
+2015/04/15 02:58 - Getting this to work on linux is a lot more work than I thought it would be.
+2015/04/15 03:38 - Got rid of all memory leaks before converting to ncurses
+2015/04/15 06:51 - Successfully converted to ncurses, and even got some colors working.
 
+
+-----Project 1.10-----
+
+2015/04/21 21:43 - I have most of the character movement and such from when I didn't get all of the conversion to C++ done. Some bugs took me forever to figure out.
+2015/04/21 21:44 - Fighting works, as far as I can tell.
 
 
 
