@@ -71,7 +71,7 @@
 
 2015/04/21 21:43 - I have most of the character movement and such from when I didn't get all of the conversion to C++ done. Some bugs took me forever to figure out.
 2015/04/21 21:44 - Fighting works, as far as I can tell.
-
+2015/04/22 07:31 - I finally got through the rest of the assignment, but haven't had time to test.
 
 
 

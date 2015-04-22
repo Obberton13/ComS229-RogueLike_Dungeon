@@ -69,9 +69,12 @@ private:
 	int look_action();
 	int control_action();
 	int move_player(char x, char y);
-	int inventory_action();
 	int death_action();
 	int quit_action();
+	int equip_action();
+	int unequip_action();
+	int drop_action();
+	int expunge_action();
 	void quit();
 };
 

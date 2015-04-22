@@ -24,11 +24,18 @@ class PC : public NPC
 {
 private:
 	Item** slots;
+	int get_carry_index(char slot);
+	int get_armor_index(char slot);
 public:
 	PC(NPCdef* def);
 	~PC();
 	int pick_up_item(Item* item);
-	Item* get_item(char slot);
 	int put_item(char slot, Item* item);
 	void attack(NPC* defender);
+	void print_equipment();
+	void print_inventory();
+	int equip(char slot);
+	int unequip(char slot);
+	Item* drop(char slot);
+	int expunge(char slot);
 };

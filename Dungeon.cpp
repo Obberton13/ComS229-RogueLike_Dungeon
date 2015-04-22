@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 static int gameLoop(PC* pc, NPCdef* pcdef);
+void clear_screen();
 
 int main(int argc, char *argv[])
 {
@@ -572,8 +573,6 @@ int Dungeon::player_input()
 			return look_action();
 		case GAME_CONTROL:
 			return control_action();
-		case GAME_INVENTORY:
-			return inventory_action();
 		case GAME_DEATH:
 			return death_action();
 		case GAME_QUIT:
@@ -632,6 +631,18 @@ int Dungeon::look_action()
 			current_state = GAME_QUIT;
 			quit();
 			break;
+		case 'w'://TODO equip an item
+			while(equip_action());
+			break;
+		case 't'://TODO take an item off
+			while(unequip_action());
+			break;
+		case 'd'://TODO drop an item
+			while(drop_action());
+			break;
+		case 'x'://TODO remove item from game
+			while(expunge_action());
+			break;
 		case 27://exit look mode
 			scrX = pc->getX() - SCREEN_W/2;
 			scrY = pc->getY() - SCREEN_H/2;
@@ -682,6 +693,18 @@ int Dungeon::control_action()
 		case 'L'://Look mode
 			current_state = GAME_LOOK;
 			return 2;
+		case 'w'://TODO equip an item
+			while(equip_action());
+			break;
+		case 't'://TODO take an item off
+			while(unequip_action());
+			break;
+		case 'd'://TODO drop an item
+			while(drop_action());
+			break;
+		case 'x'://TODO remove item from game
+			while(expunge_action());
+			break;
 		case 'S'://quit
 			current_state = GAME_QUIT;
 			quit();
@@ -693,6 +716,7 @@ int Dungeon::control_action()
 		default:
 			return 1;
 	}
+	return 1;
 }
 
 int Dungeon::move_player(char x, char y)
@@ -710,10 +734,14 @@ int Dungeon::move_player(char x, char y)
 		pc->attack(other);
 		return 0;
 	}
-	Item* item;
+	Item* item = map[newX][newY].getItem();
 	if(item)
 	{
-		//TODO make the PC pick up the item.
+		std::cerr << "I found an item." << std::endl;
+		if(!pc->pick_up_item(item))
+		{
+			map[newX][newY].setItem(NULL);
+		}
 	}
 	unsigned char oldX = pc->getX();
 	unsigned char oldY = pc->getY();
@@ -726,18 +754,6 @@ int Dungeon::move_player(char x, char y)
 	map[newX][newY].set_type(ter_room);
 	find_monster_distances();
 	return 0;
-}
-
-int Dungeon::inventory_action()
-{
-	char c = getch();
-	switch(c)
-	{
-		case 'S':
-			quit();
-		default:
-			return 1;
-	}
 }
 
 int Dungeon::death_action()
@@ -783,6 +799,49 @@ void Dungeon::quit()
 	ItemDef::deleteDefs();
 	endwin();
 	exit(0);
+}
+
+int Dungeon::equip_action()
+{
+	clear();
+	pc->print_inventory();
+	char c = getch();
+	return pc->equip(c);
+}
+
+int Dungeon::unequip_action()
+{
+	clear();
+	pc->print_equipment();
+	char c = getch();
+	return pc->unequip(c);
+}
+
+int Dungeon::drop_action()
+{
+	//TODO I have more to do in this function yet.
+	clear();
+	pc->print_inventory();
+	char c = getch();
+	if (c == 27) return 0;//escape
+	Item* dropped = pc->drop(c);
+	unsigned char x = pc->getX();
+	unsigned char y = pc->getY();
+	Item* current = map[x][y].getItem();
+	if(current)
+	{
+		pc->pick_up_item(current);
+	}
+	map[x][y].setItem(dropped);
+	return 1;
+}
+
+int Dungeon::expunge_action()
+{
+	clear();
+	pc->print_inventory();
+	char c = getch();
+	return pc->expunge(c);
 }
 
 std::ostream &operator<<(std::ostream &o, const Dungeon &d)

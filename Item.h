@@ -14,6 +14,8 @@ public:
 	inline char getSymbol() {return definition->getSymbol();}
 	inline short getColor() {return definition->getColor();}
 	inline unsigned int rollDamage() {return definition->getDamage().Roll();}
+	inline std::string getName() {return definition->getName();}
+	inline std::string getType() {return definition->getType();}
 
 	friend std::ostream &operator<<(std::ostream &o, Item &i);
 };
