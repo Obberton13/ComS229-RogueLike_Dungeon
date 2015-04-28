@@ -12,7 +12,9 @@ DungeonTile::DungeonTile()
 	type = ter_immutable;
 }
 
-DungeonTile::~DungeonTile() {}
+DungeonTile::~DungeonTile() 
+{
+}
 
 int DungeonTile::compare(DungeonTile other)
 {

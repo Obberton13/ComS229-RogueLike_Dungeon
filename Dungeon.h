@@ -50,7 +50,7 @@ private:
 	DungeonTile **map;
 	std::vector<struct room> rooms;
 	std::vector<NPC *> npcs;
-	std::vector<Item *> items;
+	//std::vector<Item *> items;
 	void initialize();
 	void generate_rooms();
 	int generate_room();

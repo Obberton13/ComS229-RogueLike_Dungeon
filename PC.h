@@ -26,14 +26,14 @@ private:
 	Item** slots;
 	int get_carry_index(char slot);
 	int get_armor_index(char slot);
+	void swap_items(unsigned int ind1, unsigned int ind2);
 public:
-	PC(NPCdef* def);
+	PC();
 	~PC();
 	int pick_up_item(Item* item);
-	int put_item(char slot, Item* item);
 	void attack(NPC* defender);
-	void print_equipment();
-	void print_inventory();
+	void print_equipment(std::string message);
+	void print_inventory(std::string message);
 	int equip(char slot);
 	int unequip(char slot);
 	Item* drop(char slot);

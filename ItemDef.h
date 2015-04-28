@@ -78,8 +78,9 @@ public:
 	inline std::string getDescription(){ return description; }
 	inline void setDescription(std::string d){ description = d; descSet = true; }
 	
-	std::string getType();//{ return type; }
+	unsigned int getType();//{ return type; }
 	void setType(std::string t);//{ type = t; typeSet = true; }
+	inline void setType(unsigned int t){type = t;typeSet = true;}
 
 	inline char getSymbol(){ return symbol; }
 	inline void setSymbol(char s){ symbol = s; symbSet = true; }

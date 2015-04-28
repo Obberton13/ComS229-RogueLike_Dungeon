@@ -33,6 +33,7 @@ public:
 	inline int getInitiative() { return initiative; }
 	inline char getSymbol(){return symbol;}
 	inline short getColor() {return color;}
+	inline int getHitpoints() {return hitpoints;}
 	inline bool isAlive() {return alive;}
 
 	inline int isNextTurn()

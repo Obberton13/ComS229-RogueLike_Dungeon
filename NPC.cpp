@@ -8,14 +8,17 @@ NPC::NPC() :
 	NPCdef *def = NPCdef::getRandom();
 	this->hitpoints = def->getHP().Roll();
 	this->speed = def->getSpeed().Roll();
-	this->initiative = this->speed;
+	this->initiative = 100/this->speed;
 	this->symbol = def->getSymbol();
 	this->name = def->getName();
 	this->description = def->getDescription();
 	this->abilities = def->getAbilities();
+	this->color = def->getColor();
+	this->damage = def->getDamage();
+
 }
 
-NPC::NPC(unsigned char x, unsigned char y) :
+NPC::NPC(unsigned char x, unsigned char y):
 	x(x),
 	y(y),
 	alive(true)
@@ -23,11 +26,13 @@ NPC::NPC(unsigned char x, unsigned char y) :
 	NPCdef* def = NPCdef::getRandom();
 	this->hitpoints = def->getHP().Roll();
 	this->speed = def->getSpeed().Roll();
-	this->initiative = this->speed;
+	this->initiative = 100/this->speed;
 	this->symbol = def->getSymbol();
 	this->name = def->getName();
 	this->description = def->getDescription();
 	this->abilities = def->getAbilities();
+	this->color = def->getColor();
+	this->damage = def->getDamage();
 }
 
 NPC::NPC(unsigned char x, unsigned char y, NPCdef *def) : 
@@ -37,11 +42,15 @@ NPC::NPC(unsigned char x, unsigned char y, NPCdef *def) :
 {
 	this->hitpoints = def->getHP().Roll();
 	this->speed = def->getSpeed().Roll();
+	this->initiative = 100/this->speed;
 	this->initiative = 0;
 	this->symbol = def->getSymbol();
 	this->name = def->getName();
 	this->description = def->getDescription();
 	this->abilities = def->getAbilities();
+	this->color = def->getColor();
+	this->damage = def->getDamage();
+
 }
 
 void NPC::setPos(unsigned char x, unsigned char y)
@@ -58,6 +67,7 @@ void NPC::attack(NPC* defender)
 void NPC::hit(int amount)
 {
 	this->hitpoints-=amount;
+	std::cerr << this->name << " got hit for " << amount << "points of damage." << std::endl;
 	if(this->hitpoints<=0)
 	{
 		alive = false;
@@ -76,7 +86,7 @@ void NPC::use_initiative()
 
 bool NPC::is_next_turn()
 {
-	return this->initiative >= 10/speed;
+	return this->initiative >= 100/speed;
 }
 
 NPC::~NPC()

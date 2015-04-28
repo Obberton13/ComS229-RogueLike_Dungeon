@@ -103,7 +103,8 @@ int ItemDef::parseObjects()
 			boost::regex_match(line.c_str(), matches, regex);
 			std::string type(matches[1]);
 			obj->setType(type);
-			//std::cout << "Set obj type" << std::endl;
+			//std::cerr << obj->getType() << std::endl;
+			//std::cerr << "Set obj type" << std::endl;
 		}
 		else if (word == "WEIGHT")
 		{
@@ -189,13 +190,14 @@ ItemDef::~ItemDef()
 {
 }
 
-std::string ItemDef::getType()
+unsigned int ItemDef::getType()
 {
-	return std::string();
+	return type;
 }
 
 void ItemDef::setType(std::string t)
 {
+	type = 0;
 	if (t == "WEAPON")
 	{
 		type |= ITEM_WEAPON;

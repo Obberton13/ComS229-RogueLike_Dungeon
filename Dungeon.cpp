@@ -7,7 +7,6 @@
 #include <climits>
 #include <unistd.h>
 
-static int gameLoop(PC* pc, NPCdef* pcdef);
 void clear_screen();
 
 int main(int argc, char *argv[])
@@ -35,45 +34,30 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	srand(time(0));
-	NPCdef* pc = new NPCdef();
-	pc->setAbilities("TUNNEL TELEPATH");
-	pc->setColor("WHITE");
-	pc->setDamage(Dice(0, 2, 6));
-	pc->setDescription("The player character. It's YOU!");
-	pc->setName("Intarmin Hanurnatural");
-	pc->setHP(Dice(15, 2, 8));
-	pc->setSpeed(Dice(10, 0, 0));
-	pc->setSymbol('@');
-	PC* player = new PC(pc);
-	while (!gameLoop(player, pc));//do nothing but the inner game loop.
-	delete pc;
-	NPCdef::deleteDefs();
-	ItemDef::deleteDefs();
-	endwin();
-	return 0;
-}
-
-int gameLoop(PC* pc, NPCdef* pcdef)
-{
-	Dungeon *d = new Dungeon(pc);
+	PC* player = new PC();
+	Dungeon *d = new Dungeon(player);
 	int test;
-	while (!(test = d->game_loop()))
+	while ((test = d->game_loop()))
 	{
 		if(test == 2)
 		{
-			delete pc;
-			pc = new PC(pcdef);
+			delete player;
+			player = new PC();
 			delete d;
-			d = new Dungeon(pc);
+			d = new Dungeon(player);
 		}
 		if(test == 3)
 		{
 			delete d;
-			d = new Dungeon(pc);
+			d = new Dungeon(player);
 		}
 	}
 	delete d;
-	return 1;
+	delete player;
+	NPCdef::deleteDefs();
+	ItemDef::deleteDefs();
+	endwin();
+	return 0;
 }
 
 Dungeon::Dungeon(PC* pc): pc(pc)
@@ -90,19 +74,19 @@ Dungeon::Dungeon(PC* pc): pc(pc)
 
 Dungeon::~Dungeon()
 {
-	for (int i = 0; i < DUNGEON_X; i++)
+	for (int x = 0; x < DUNGEON_X; x++)
 	{
-		delete[] map[i];
+		for(int y = 0; y < DUNGEON_Y; y++)
+		{
+			delete map[x][y].getItem();
+		}
+		delete[] map[x];
 	}
 	delete[] map;
 	unsigned int i = 0;
 	for(i = 0; i< npcs.size(); i++)
 	{
 		delete npcs[i];
-	}
-	for(i = 0; i<items.size(); i++)
-	{
-		delete items[i];
 	}
 }
 
@@ -310,7 +294,6 @@ void Dungeon::spawn_items()
 		y = (rand() % rooms[rm].h) + rooms[rm].y;
 		Item* tmp = new Item(x, y);
 		map[x][y].setItem(tmp);
-		items.push_back(tmp);
 	}
 }
 
@@ -360,8 +343,12 @@ void Dungeon::find_monster_distances()
 int Dungeon::game_loop()
 {
 	unsigned int i;
-	print();//TODO debugging switch statement.
 	pc->use_initiative();
+	if(!pc->isAlive())
+	{
+		current_state = GAME_DEATH;
+		return 2;
+	}
 	if(pc->is_next_turn())
 	{
 		while(player_input())
@@ -372,17 +359,12 @@ int Dungeon::game_loop()
 	{
 		if(!npcs[i]->isAlive())//If the monster is DEAD, don't worry about it.
 		{
-			if(i==0)//If it is actually the player that is dead, end the game.
-			{
-				current_state = GAME_DEATH;
-				return 2;
-			}
 			continue;
 		}
-		if(!npcs[i]->is_next_turn())
+		if(!npcs[i]->is_next_turn())//if it isn't their next turn,
 		{
-			npcs[i]->use_initiative();
-			continue;
+			npcs[i]->use_initiative();//use initiative
+			continue;//and go to the next monster
 		}
 		else
 		{
@@ -395,12 +377,13 @@ int Dungeon::game_loop()
 			npcs[i]->reset_initiative();
 		}
 	}
-	if(current_state == GAME_DEATH) return 1;
-	return 0;
+	if(current_state == GAME_QUIT) return 0;
+	return 1;
 }
 
 void Dungeon::move_monster(NPC* npc, unsigned char x, unsigned char y)
 {
+	if(!npc) return;
 	DungeonTile t = map[x][y];
 	map[npc->getX()][npc->getY()].set_monster(NULL);
 	map[x][y].set_monster(npc);
@@ -421,6 +404,7 @@ void Dungeon::print()
 			putchar(x+scrX, y+scrY, x, y);
 		}
 	}//*/
+	mvprintw(0, 0, "%d", pc->getHitpoints());
 	refresh();//make sure to actually update the game screen.
 }
 
@@ -472,6 +456,7 @@ int Dungeon::push_monster(NPC* npc, bool isFirst)
 	{
 		return 0;
 	}
+
 	if(isFirst) npc->reset_initiative();
 	signed char offsetX[8] = {0,0,1,1,1,-1,-1,-1};
 	signed char offsetY[8] = {1,-1,1,0,-1,1,0,-1};
@@ -495,15 +480,10 @@ int Dungeon::push_monster(NPC* npc, bool isFirst)
 			return 1;
 		}
 		move_monster(npc, newX, newY);
-		if(push_monster(existing, false))
+		move_monster(existing, x, y);//Screw the pushing stuff, just swap them.
+		if(abilities & NPC_TUNNEL)//and if it tunnels,
 		{
-			move_monster(npc, x, y);//move the current monster back
-			move_monster(existing, newX, newY);//make sure the map still knows about the existing monster
-			return 1;
-		}
-		if(abilities & NPC_TUNNEL)
-		{
-			map[x][y].set_hardness(0);
+			map[x][y].set_hardness(0);//clear the path that the monster goes to.
 			map[x][y].set_type(ter_room);
 		}
 		return 0;
@@ -513,7 +493,7 @@ int Dungeon::push_monster(NPC* npc, bool isFirst)
 		testX = x + offsetX[i];
 		testY = y + offsetY[i];
 		{
-			if(map[testX][testY].get_hardness()) continue;
+			if(map[testX][testY].get_hardness()) continue;//if it has hardnes != 0, it's a wall or something.
 		}
 		dist = map[testX][testY].get_dist_to_player();
 		if(dist<minDist)
@@ -546,27 +526,19 @@ int Dungeon::push_monster(NPC* npc, bool isFirst)
 	{
 		return 1;
 	}
-	if ((abilities&NPC_TUNNEL)&&(map[newX][newY].get_hardness()!=0))//if the monster can tunnel
-	{
-		//set the place the monster went to to traversable terrain.
-		map[x][y].set_type(ter_room);
-		map[x][y].set_hardness(0);
-	}
 	NPC* existing = map[newX][newY].get_monster();//I do this to prevent accidental infinite recursion.
-	move_monster(npc, newX, newY);//If we move the monster, there is no way the monster that was here before
-	if(push_monster(existing, false))//move the monster that we just moved on top of.
+	if(existing == pc)
 	{
-		//if the monster that we just tried to move over can't move, move the monster back.
-		move_monster(npc, x, y);
-		//make sure the map doesn't think the new spot doesn't have a monster in it for some reason.
-		move_monster(existing, newX, newY);
-		return 1;
+		std::cerr << "I got to the PC without attacking it first" << std::endl;
 	}
+	move_monster(npc, newX, newY);//If we move the monster, there is no way the monster that was here before
+	move_monster(existing, x, y);//again, no need for pushing monsters, just swap them.
 	return 0;
 }
 
 int Dungeon::player_input()
 {
+	print();
 	switch(current_state)
 	{
 		case GAME_LOOK:
@@ -649,7 +621,6 @@ int Dungeon::look_action()
 			current_state = GAME_CONTROL;
 			return 1;
 	}
-	print();
 	return 1;
 }
 
@@ -693,16 +664,16 @@ int Dungeon::control_action()
 		case 'L'://Look mode
 			current_state = GAME_LOOK;
 			return 2;
-		case 'w'://TODO equip an item
+		case 'w'://equip an item
 			while(equip_action());
 			break;
-		case 't'://TODO take an item off
+		case 't'://take an item off
 			while(unequip_action());
 			break;
-		case 'd'://TODO drop an item
+		case 'd'://drop an item
 			while(drop_action());
 			break;
-		case 'x'://TODO remove item from game
+		case 'x'://remove an item from the game
 			while(expunge_action());
 			break;
 		case 'S'://quit
@@ -730,14 +701,18 @@ int Dungeon::move_player(char x, char y)
 	NPC* other = map[newX][newY].get_monster();
 	if(other)
 	{
-		//TODO everything involving pc should be turned into the PC.
 		pc->attack(other);
+		if(!other->isAlive())
+		{
+			newX = other->getX();
+			newY = other->getY();
+			map[newX][newY].set_monster(NULL);
+		}
 		return 0;
 	}
 	Item* item = map[newX][newY].getItem();
 	if(item)
 	{
-		std::cerr << "I found an item." << std::endl;
 		if(!pc->pick_up_item(item))
 		{
 			map[newX][newY].setItem(NULL);
@@ -804,16 +779,18 @@ void Dungeon::quit()
 int Dungeon::equip_action()
 {
 	clear();
-	pc->print_inventory();
+	pc->print_inventory("Select an item to equip:");
 	char c = getch();
+	if(c == 27) return 0;
 	return pc->equip(c);
 }
 
 int Dungeon::unequip_action()
 {
 	clear();
-	pc->print_equipment();
+	pc->print_equipment("Select an item to unequip:");
 	char c = getch();
+	if(c == 27) return 0;
 	return pc->unequip(c);
 }
 
@@ -821,7 +798,7 @@ int Dungeon::drop_action()
 {
 	//TODO I have more to do in this function yet.
 	clear();
-	pc->print_inventory();
+	pc->print_inventory("Select an item to drop:");
 	char c = getch();
 	if (c == 27) return 0;//escape
 	Item* dropped = pc->drop(c);
@@ -839,8 +816,9 @@ int Dungeon::drop_action()
 int Dungeon::expunge_action()
 {
 	clear();
-	pc->print_inventory();
+	pc->print_inventory("Select an item to expunge:");
 	char c = getch();
+	if(c==27)return 0;
 	return pc->expunge(c);
 }
 

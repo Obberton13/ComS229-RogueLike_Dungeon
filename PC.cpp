@@ -6,8 +6,20 @@
 #define SCREEN_H 80
 #endif
 
-PC::PC(NPCdef* def):NPC(0, 0, def)
+PC::PC()
 {
+	NPC::x = 0;
+	NPC::y = 0;
+	NPC::symbol = '@';
+	NPC::hitpoints = Dice(15, 2, 8).Roll();
+	NPC::speed = 10;
+	NPC::initiative = 10;
+	NPC::abilities = NPC_TUNNEL|NPC_TELEPATH;
+	NPC::name = "Intarmin Hanurnatural";
+	NPC::description = "The player character";
+	NPC::color = COLOR_WHITE;
+	NPC::damage = Dice(0, 2, 6);
+	NPC::alive = true;
 	unsigned char i;
 	slots = new Item*[PC_TOTAL_SLOTS];
 	for(i = 0; i < PC_TOTAL_SLOTS; i++)
@@ -44,12 +56,6 @@ int PC::get_carry_index(char slot)
 	return (int)(slot - '0' + PC_ARMOR_SLOTS);
 }
 
-int put_item(char slot, Item* item)
-{
-	//TODO unimplemented
-	return 0;
-}
-
 void PC::attack(NPC* defender)
 {
 	int i;
@@ -65,9 +71,10 @@ void PC::attack(NPC* defender)
 	defender->hit(dmg);
 }
 
-void PC::print_equipment()
+void PC::print_equipment(std::string message)
 {
-	unsigned char i, row;
+	unsigned char i, row = 2;
+	mvprintw(row, 4, message.c_str());
 	for(i = 0; i < PC_ARMOR_SLOTS; i++)
 	{
 		if(slots[i])
@@ -81,27 +88,87 @@ void PC::print_equipment()
 	}
 }
 
-void PC::print_inventory()
+void PC::print_inventory(std::string message)
 {
-	unsigned char i, row;
+	unsigned char i, row = 2;
+	mvprintw(row, 4, message.c_str());
 	for(i = PC_ARMOR_SLOTS; i < PC_TOTAL_SLOTS;i++)
 	{
-		std::string toPrint;
-		toPrint.push_back(i + '0');
-		toPrint+= ") ";
-		toPrint += slots[i]->getName();
-		mvprintw(++row, 2, toPrint.c_str());
+		if(slots[i])
+		{
+			std::string toPrint;
+			toPrint.push_back(i + '0' - PC_ARMOR_SLOTS);
+			toPrint+= ") ";
+			toPrint += slots[i]->getName();
+			mvprintw(++row, 2, toPrint.c_str());
+		}
 	}
 }
 
 int PC::equip(char slot)
 {
 	int index = get_carry_index(slot);
-	if(index==INT_MAX) return 1;
+	if(index==INT_MAX)
+	{
+		return 1;
+	}
 	Item* item = slots[index];
-	std::string attributes = item->getType();
+	if(!item) return 1;
+	unsigned int type = item->getType();
+	switch(type)
+	{
+		case ITEM_WEAPON:
+			swap_items(index, SLOT_WEAPON);
+			break;
+		case ITEM_OFFHAND:
+			swap_items(index, SLOT_OFFHAND);
+			break;
+		case ITEM_RANGED:
+			swap_items(index, SLOT_RANGED);
+			break;
+		case ITEM_ARMOR:
+			swap_items(index, SLOT_ARMOR);
+			break;
+		case ITEM_HELMET:
+			swap_items(index, SLOT_HELMET);
+			break;
+		case ITEM_CLOAK:
+			swap_items(index, SLOT_CLOAK);
+			break;
+		case ITEM_GLOVES:
+			swap_items(index, SLOT_GLOVES);
+			break;
+		case ITEM_BOOTS:
+			swap_items(index, SLOT_BOOTS);
+			break;
+		case ITEM_RING://TODO special case
+			if(slots[SLOT_RING1])
+			{
+				Item* tmp = slots[SLOT_RING1];
+				slots[SLOT_RING1] = slots[index];
+				slots[index] = slots[SLOT_RING2];
+				slots[SLOT_RING2] = tmp;
+			}
+			swap_items(index, SLOT_RING1);
+			break;
+		case ITEM_AMULET:
+			swap_items(index, SLOT_AMULET);
+			break;
+		case ITEM_LIGHT:
+			swap_items(index, SLOT_LIGHT);
+			break;
+		case ITEM_SCROLL:
+		case ITEM_BOOK:
+		case ITEM_FLASK:
+		case ITEM_GOLD:
+		case ITEM_AMMO:
+		case ITEM_FOOD:
+		case ITEM_WAND:
+		case ITEM_CONTAINER:
+		default:
+			return 1;
+	}
 	return 0;
-	//TODO this will involve a giant switch statement.
 }
 
 int PC::unequip(char slot)
@@ -138,11 +205,23 @@ int PC::expunge(char slot)
 {
 	int index = get_carry_index(slot);
 	if(index == INT_MAX) return 1;
+	delete slots[index];
 	slots[index] = NULL;
 	return 0;
 }
 
+void PC::swap_items(unsigned int ind1, unsigned int ind2)
+{
+	Item* tmp = slots[ind1];
+	slots[ind1] = slots[ind2];
+	slots[ind2] = tmp;
+}
+
 PC::~PC()
 {
+	for(int i = 0; i < PC_TOTAL_SLOTS; i++)
+	{
+		delete slots[i];
+	}
 	delete[] slots;
 }

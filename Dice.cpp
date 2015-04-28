@@ -46,6 +46,7 @@ Dice &Dice::operator=(const Dice &other)
 unsigned int Dice::Roll()
 {
 	unsigned int result = base, i;
+	if(sides == 0) return result;
 	for(i = 0; i < number; i++)
 	{
 		result += (random() % sides) + 1;//somehow, this works even when I don't include <random>
